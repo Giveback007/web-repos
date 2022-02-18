@@ -1,0 +1,33 @@
+{
+  "name": "ze-list",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "concurrently \"yarn:dev\" \"yarn:tailwind\" \"yarn:typecheck\" -k --kill-others-on-fail -p \"{name}|\" -n \"FE,TW,TS\" -c \"green,cyan,blue\"",
+    "build": "node build",
+    "dev": "node build dev:browser",
+    "tailwind": "tailwindcss -i src/styles/tailwind.css -o src/index.css --watch",
+    "typecheck": "tsc --watch --preserveWatchOutput",
+    "test-build": "yarn build && node build test",
+    "play": "concurrently \"yarn build-dev play web\" \"yarn:tailwind\" -k --kill-others-on-fail -p \"{name}|\" -n \"FE,TW\" -c \"green,cyan\""
+  },
+  "dependencies": {
+    "@giveback007/browser-utils": "^0.3.3",
+    "@giveback007/util-lib": "^0.25.1",
+    "classnames": "^2.3.1",
+    "jsoneditor": "^9.7.2",
+    "my-alyce-component-lib": "^0.1.24",
+    "react-dom": "^17.0.2",
+    "react": "^17.0.2",
+    "tslib": "~2.3.1"
+  },
+  "devDependencies": {
+    "@types/gapi": "^0.0.41",
+    "@types/gapi.auth2": "^0.0.56",
+    "@types/jsoneditor": "^9.5.1",
+    "@types/react-dom": "^17.0.11",
+    "@types/react": "^17.0.39",
+    "tailwindcss": "^3.0.22",
+    "typescript": "4.5.5"
+  }
+}

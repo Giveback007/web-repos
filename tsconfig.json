@@ -1,0 +1,83 @@
+{
+    "compilerOptions": {
+        /* -- Basic Options -- */
+        "target": "es6",
+        "lib": ["DOM", "dom.iterable", "es2021"],
+        // "rootDir": "./",
+        "rootDir": "./",
+        "outDir": "dist/",
+        "module": "commonjs",
+        "declaration": true,
+        "importHelpers": true,
+        "pretty": true,
+        "jsx": "react",
+        "downlevelIteration": true,
+        "allowJs": true,
+        "experimentalDecorators": true,
+
+
+        /* Additional Options */
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "importsNotUsedAsValues": "error",
+        // "sourceMap": true,
+        "inlineSourceMap": true,
+
+        /* -- Other -- */
+        "allowUmdGlobalAccess": false,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "assumeChangesOnlyAffectDirectDependencies": false,
+        "checkJs": false,
+        "disableSizeLimit": false,
+        "generateCpuProfile": "profile.cpuprofile",
+        "jsxFactory": "React.createElement",
+        "jsxFragmentFactory": "React.Fragment",
+        // "noImplicitUseStrict": false,
+        // "noStrictGenericChecks": false,
+        // "preserveConstEnums": false,
+        "removeComments": true,
+        "strictBindCallApply": true,
+        "suppressImplicitAnyIndexErrors": true,
+        // "suppressExcessPropertyErrors": false,
+        // "suppressImplicitAnyIndexErrors": false,
+        // "useDefineForClassFields": false
+
+        /* -- For Parallel Typechecking -- */
+        "noEmit": true,
+        "skipLibCheck": true,
+
+        /* -- Strict Type-Checking Options -- */
+        "alwaysStrict": true, /* Parse in strict mode and emit "use strict" for each source file. */
+        "noFallthroughCasesInSwitch": false, /* Report errors for fallthrough cases in switch statement. */
+        "noImplicitAny": true, /* Raise error on expressions and declarations with an implied 'any' type. */
+        "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+        "noImplicitThis": true, /* Raise error on 'this' expressions with an implied 'any' type. */
+        "noUnusedLocals": true, /* Report errors on unused locals. */
+        "noUnusedParameters": true, /* Report errors on unused parameters. */
+        "strict": true, /* Enable all strict type-checking options. */
+        "strictFunctionTypes": true, /* Enable strict checking of function types. */
+        "strictNullChecks": true, /* Enable strict null checks. */
+        "strictPropertyInitialization": true, /* Ensure non-undefined class properties are initialized in the constructor. */
+        "esModuleInterop": true,
+
+        /* -- Module Resolution Options -- */
+        "moduleResolution": "node",
+        "typeRoots": [
+            "./node_modules/@types",
+            "./**/@types"
+        ],
+        "baseUrl": "./",
+        "paths": {
+            // "@ProjName/common/*": ["./common/*"]
+        },
+    },
+    "exclude": [
+        "node_modules",
+        "playground",
+        "build.ts",
+        "dev.ts"
+    ],
+    "include": ["./**/*", "types.d.ts"],
+}

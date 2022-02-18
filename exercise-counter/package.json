@@ -1,0 +1,12 @@
+{
+    "name": "exercise-counter",
+    "version": "1.0.0",
+    "main": "index.html",
+    "scripts": {
+        "start": "cd .. && yarn run-ts dev exercise-counter",
+        "run-ts1": "node --unhandled-rejections=strict --enable-source-maps --trace-warnings -r esbuild-register"
+    },
+    "dependencies": {
+        "lit-html": "^2.2.0"
+    }
+}

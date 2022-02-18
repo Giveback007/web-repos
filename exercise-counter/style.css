@@ -1,0 +1,91 @@
+/* --RESET-- */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+
+/* --GENERAL-- */
+body {
+  max-width: 35rem;
+  margin: auto;
+}
+
+button {
+  cursor: pointer;
+  border: solid rgb(239, 239, 239);
+  height: 3rem;
+}
+
+button.active {
+  border: solid lightgray;
+  background: lightgray;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Active as in `mouse-down` */
+button:active { 
+  background: lightgray;
+}
+
+/* --TOP-BAR-- */
+.top-bar {
+  display: flex;
+}
+
+.top-bar button {
+  flex: 1;
+  height: 5rem;
+  
+}
+
+
+/* --EXERCISES-VIEW-- */
+.exercises-view .bar {
+  display: flex;
+}
+
+.exercises-view .bar button {
+  flex: 1;
+  min-height: 3rem;
+}
+
+.exercises-view #exercise-input {
+  padding-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.exercises-view #exercise-input input {
+  width: 5.5rem;
+  text-align: center;
+  font-size: xx-large;
+}
+
+.exercises-view #exercise-input button {
+  margin: 0;
+  padding: 0 1rem;
+}
+
+.exercises-view #todays-total {
+  text-align: center;
+}
+
+.exercises-view #submit-day {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.exercises-view #submit-day input {
+  font-size: x-large;
+  text-align: center;
+}
+
+.exercises-view #submit-day button {
+  width: 6rem;
+}
