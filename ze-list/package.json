@@ -1,15 +1,12 @@
 {
   "name": "ze-list",
-  "browserslist": "> 0.5%, last 2 versions, not dead",
-  "source": "src/index.html",
+  "version": "1.0.0",
+  "main": "index.html",
   "scripts": {
     "start": "concurrently \"yarn:dev\" \"yarn:tailwind\" \"yarn:typecheck\" -k --kill-others-on-fail -p \"{name}|\" -n \"FE,TW,TS\" -c \"green,cyan,blue\"",
-    "build": "node build",
-    "dev": "node build dev:browser",
+    "dev": "cd .. && yarn dev ze-list",
     "tailwind": "tailwindcss -i src/styles/tailwind.css -o src/index.css --watch",
-    "typecheck": "tsc --watch --preserveWatchOutput",
-    "test-build": "yarn build && node build test",
-    "play": "concurrently \"yarn build-dev play web\" \"yarn:tailwind\" -k --kill-others-on-fail -p \"{name}|\" -n \"FE,TW\" -c \"green,cyan\""
+    "typecheck": "tsc --watch --preserveWatchOutput"
   },
   "dependencies": {
     "@giveback007/browser-utils": "^0.3.3",

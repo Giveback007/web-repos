@@ -1,5 +1,4 @@
 import { Dict, uuid } from '@giveback007/util-lib';
-import { str } from 'src/test';
 
 export const elm = (id: string) => {
   const el = document.getElementById(id);

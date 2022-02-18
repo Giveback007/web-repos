@@ -3,22 +3,34 @@ import { buildBrowser, copy } from 'build-dev';
 import historyApiFallback from 'connect-history-api-fallback';
 import browserSync from "browser-sync";
 
-export const onProcessEnd = (fct: (exitCode: number) => unknown) =>
+type Opts = Parameters<typeof buildBrowser>[0];
+
+const onProcessEnd = (fct: (exitCode: number) => unknown) =>
     [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(ev => process.on(ev, fct));
 
 // should have logic here to build the full project
 (async function run([type]) {
     copy('./index.html', './dist/index.html');
 
-    /* -- Exercise-Counter -- */
-    await buildBrowser({
-        fromDir: 'exercise-counter', // ./browser
-        entryFile: 'main.js', // ./browser/index.tsx
-        toDir: 'dist/exercise-counter', // ./.cache/web
-        // copy ./browser/index.html & ./browser/public/
-        copyFiles: ['index.html', 'style.css'],
-        // env: { envFile: '.key' }
-    });
+    const arr: Opts[] = [
+        /* -- Exercise-Counter -- */
+        {
+            fromDir: 'exercise-counter',
+            entryFile: 'main.js',
+            toDir: 'dist/exercise-counter',
+            copyFiles: ['index.html', 'style.css'],
+        },
+        /* -- Ze-List -- */
+        {
+            fromDir: 'ze-list/src',
+            entryFile: 'index.tsx',
+            toDir: 'dist/ze-list',
+            copyFiles: ['index.html', 'public']
+        }
+    ];
+
+    const promises = arr.map(opt => buildBrowser(opt));
+    await Promise.all(promises);
 
     if (type === 'test') {
         const bs = browserSync.create();

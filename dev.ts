@@ -10,6 +10,13 @@ import { devBrowser } from 'build-dev';
                 toDir: '.cache/exercise-counter',
                 copyFiles: ['index.html', 'style.css']
             });
+        case 'ze-list':
+            return devBrowser({
+                fromDir: 'ze-list/src',
+                entryFile: 'index.tsx',
+                toDir: '.cache/ze-list',
+                copyFiles: ['index.html', 'public']
+            });
         default:
             throw new Error(`"${type}" not implemented`);
     }

@@ -3,7 +3,6 @@ import { cst, nextItem, store } from "./store";
 import ding = require('../assets/ding.mp3');
 import { speaker } from "./speaker";
 import { playAudio, TextItems } from "../utils/utils";
-import { auth } from "src/utils/auth";
 
 /** Manage speaker based on `selectedItem` */
 export const speakerEffect = () => store.stateSub(
@@ -113,27 +112,27 @@ export const autoNextEffect = () => store.stateSub(
 );
 
 /** Manage authentication actions */
-export const authEffect = () => store.actionSub(['login', 'login-refresh'], async (a) => {
-    switch (a.type) {
-        case 'login-refresh':
-            store.setState({ currentUser: 'loading' })
-            const res = await auth.refresh();
-            let currentUser: gapi.auth2.BasicProfile | null = null;
-            if (res.type === 'success') currentUser = res.googleUser.getBasicProfile();
+// export const authEffect = () => store.actionSub(['login', 'login-refresh'], async (a) => {
+//     switch (a.type) {
+//         case 'login-refresh':
+//             store.setState({ currentUser: 'loading' })
+//             const res = await auth.refresh();
+//             let currentUser: gapi.auth2.BasicProfile | null = null;
+//             if (res.type === 'success') currentUser = res.googleUser.getBasicProfile();
 
-            store.setState({ currentUser });
-            break;
-        case 'login':
-            store.setState({ currentUser: 'loading' });
+//             store.setState({ currentUser });
+//             break;
+//         case 'login':
+//             store.setState({ currentUser: 'loading' });
 
-            try {
-                const user = await auth.signIn('google');
-                store.setState({ currentUser: user.getBasicProfile() });
-            } catch {
-                store.setState({ currentUser: null });
-            }
+//             try {
+//                 const user = await auth.signIn('google');
+//                 store.setState({ currentUser: user.getBasicProfile() });
+//             } catch {
+//                 store.setState({ currentUser: null });
+//             }
 
-            break;
-        default: break;
-    }
-});
+//             break;
+//         default: break;
+//     }
+// });

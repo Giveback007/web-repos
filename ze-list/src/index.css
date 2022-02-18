@@ -29,10 +29,6 @@
   height: 60vh
 }
 
-.h-full {
-  height: 100%
-}
-
 .max-h-96 {
   max-height: 24rem
 }
@@ -51,10 +47,6 @@
 
 .flex-1 {
   flex: 1 1 0%
-}
-
-.border {
-  border-width: 1px
 }
 
 .bg-gray-100 {

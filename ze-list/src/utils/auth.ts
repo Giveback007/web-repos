@@ -1,10 +1,8 @@
-import { nonValue } from "@giveback007/util-lib";
-
 type LoginTypes = 
     | 'google'
 
 // TODO: handle already sign in
-class Auth {
+export class Auth {
 
     private resGoogle!: (val: gapi.auth2.GoogleAuthBase) => any;
     readonly google = new Promise<gapi.auth2.GoogleAuthBase>((res) => this.resGoogle = res);
@@ -93,6 +91,6 @@ class Auth {
     }
 }
 
-export const auth = new Auth({
-    GOOGLE_CLIENT_ID
-});
+// export const auth = new Auth({
+//     GOOGLE_CLIENT_ID
+// });
