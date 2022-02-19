@@ -38,6 +38,20 @@ export const projects: Opts[] = [
         toDir: 'dist/vjs-game-of-life',
         copyFiles: ['index.html', 'public']
     },
+    /* -- React JS Game Of Life -- */
+    {
+        fromDir: 'react-game-of-life',
+        entryFile: 'main.jsx',
+        toDir: 'dist/react-game-of-life',
+        copyFiles: ['index.html', 'public']
+    },
+    /* -- Tic-Tac-Toe -- */
+    {
+        fromDir: 'tic-tac-toe',
+        entryFile: 'main.js',
+        toDir: 'dist/tic-tac-toe',
+        copyFiles: ['index.html', 'public']
+    },
     /* -- Tic-Tac-Toe -- */
     {
         fromDir: 'tic-tac-toe',

@@ -1,0 +1,141 @@
+*
+  box-sizing: border-box
+
+body
+  margin: 0
+  background-color: #125DB0
+
+button
+  border: outset 2px lightgrey
+  background: lightgrey
+  border-radius: 4px
+  &:active
+    border: solid lightgrey
+
+.nav
+  padding-top: 150px
+  position: fixed
+  z-index: 99
+  width: 0
+  transition: width 0.5s
+  top: 0
+  left: 0
+  height: 100%
+  background: #3474BC
+  button, input, h3, h2
+    display: none
+  &.navOn
+    width: 220px
+    box-shadow: 3px 6px 5px 3px rgba(0,0,0,0.35)
+    transition: width 1s
+    button, input, h3, h2
+      display: block
+    input
+      margin: auto
+      width: 100px
+    h2, h3
+      text-align: center
+      margin: 0
+  .nav__top-btns
+    margin: 0 0 20px 0
+    display: flex
+    flex-wrap: wrap
+    button
+      width: 31%
+      height: 50px
+      margin: 0 auto
+      margin-top: 15px
+  .nav__bottom-btns
+    display: flex
+    flex-direction: column
+    button
+      height: 40px
+      margin: 3px 0
+  .nav__speed, .nav__spawn-rate
+    display: flex
+    margin: 5px 0 15px 0
+    justify-content: space-between
+    // border: solid
+    h2
+      margin: auto
+    button
+      width: 35px
+      height: 40px
+      margin: 0 3px
+      font-size: 20px
+      padding: 1px
+
+#navOnOff
+  position: fixed
+  font-size: 60px
+  padding: 5px
+  z-index: 100
+  width: 100px
+  height: 100px
+  border: outset 3px lightgrey
+  top: 35px
+  left: 60px
+  background: rgba(211, 211, 211, 0.5)
+  border-radius: 15%
+  &.navOn
+    background: lightgrey
+    transition: background-color 1s
+  &:active
+    border: inset 3px lightgrey
+
+@media screen and (max-width: 450px)
+  .nav
+    padding-top: 80px
+    &.navOn
+      width: 200px
+  #navOnOff
+    width: 50px
+    height: 50px
+    top: 15px
+    left: 15px
+    font-size: 25px
+    padding: 5px
+    &.navOn
+      top: 20px
+      left: 75px
+      transition: top 1s, left 2s
+  #cycles
+    left: 0
+
+#grid-container
+  position: fixed
+  left: 50%
+  top: 50%
+  transform: translate(-50%, -50%)
+  // border: inset
+
+#grid
+  background: #6ee3c0
+  border: inset #0A4586
+  //hsl(162, 66%, 66%)
+
+#cycles
+  position: fixed
+  margin: 25px 0
+  top: 0
+  left: 50%
+  z-index: 98
+  h3
+    margin: 5px 0 0 0
+    text-align: center
+    font-size: 25px
+
+.row
+  display: flex
+
+.on
+  border: outset 1px #f2f2f2
+
+.row div
+  transition: width 1.8s, height 1.8s
+
+.row div:active
+  border: inset 4px
+  border-radius: 25%
+  background: #49D0A7
+  cursor: pointer
