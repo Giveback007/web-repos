@@ -9,30 +9,17 @@ const onProcessEnd = (fct: (exitCode: number) => unknown) =>
     [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(ev => process.on(ev, fct));
 
 // should have logic here to build the full project
-(async function run([type]) {
-    copy('./index.html', './dist/index.html');
+setTimeout(async () => {
+    const [type = 'build'] = process.argv.slice(2)
+    if (type === 'build') {
+        copy('./index.html', './dist/index.html');
+        copy('./manifest.webmanifest', './dist/manifest.webmanifest');
+        copy('public', './dist/public');
 
-    const arr: Opts[] = [
-        /* -- Exercise-Counter -- */
-        {
-            fromDir: 'exercise-counter',
-            entryFile: 'main.js',
-            toDir: 'dist/exercise-counter',
-            copyFiles: ['index.html', 'style.css'],
-        },
-        /* -- Ze-List -- */
-        {
-            fromDir: 'ze-list/src',
-            entryFile: 'index.tsx',
-            toDir: 'dist/ze-list',
-            copyFiles: ['index.html', 'public']
-        }
-    ];
+        const promises = projects.map(opt => buildBrowser(opt));
+        await Promise.all(promises);
 
-    const promises = arr.map(opt => buildBrowser(opt));
-    await Promise.all(promises);
-
-    if (type === 'test') {
+    } else if (type === 'test') {
         const bs = browserSync.create();
         bs.init({
             server: 'dist/',
@@ -53,5 +40,23 @@ const onProcessEnd = (fct: (exitCode: number) => unknown) =>
         // can kill all node:
         // taskkill /f /im node.exe
     }
-})(process.argv.slice(2));
+}, 0);
 
+
+// ~--~ PROJECT BUILD OPTIONS ~--~ //
+const projects: Opts[] = [
+    /* -- Exercise-Counter -- */
+    {
+        fromDir: 'exercise-counter',
+        entryFile: 'main.js',
+        toDir: 'dist/exercise-counter',
+        copyFiles: ['index.html', 'public']
+    },
+    /* -- Ze-List -- */
+    {
+        fromDir: 'ze-list/src',
+        entryFile: 'index.tsx',
+        toDir: 'dist/ze-list',
+        copyFiles: ['index.html', 'public']
+    }
+];

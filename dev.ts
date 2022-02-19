@@ -8,7 +8,7 @@ import { devBrowser } from 'build-dev';
                 fromDir: 'exercise-counter',
                 entryFile: 'main.js',
                 toDir: '.cache/exercise-counter',
-                copyFiles: ['index.html', 'style.css']
+                copyFiles: ['index.html', 'public']
             });
         case 'ze-list':
             return devBrowser({
