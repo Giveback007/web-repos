@@ -15,7 +15,7 @@ setTimeout(async () => {
         copy('./manifest.webmanifest', './dist/manifest.webmanifest');
         copy('public', './dist/public');
 
-        const promises = projects.map(opt => buildBrowser(opt));
+        const promises = projects.map(opt => buildBrowser({ ...opt, fromDir: 'projects/' + opt.fromDir}));
         await Promise.all(promises);
 
     } else if (type === 'test') {

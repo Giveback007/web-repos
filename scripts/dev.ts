@@ -7,6 +7,7 @@ import { projects } from './projects';
     if (idx === -1) throw new Error(`[type: ${type}] not found in [projects.ts]`);
     
     const opts = {...projects[idx]};
+    opts.fromDir = 'projects/' + opts.fromDir
     opts.toDir = opts.toDir.replace('dist/', '.cache/');
     
     return devBrowser(opts);
