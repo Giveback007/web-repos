@@ -37,5 +37,12 @@ export const projects: Opts[] = [
         entryFile: 'main.js',
         toDir: 'dist/vjs-game-of-life',
         copyFiles: ['index.html', 'public']
+    },
+    /* -- Tic-Tac-Toe -- */
+    {
+        fromDir: 'tic-tac-toe',
+        entryFile: 'main.js',
+        toDir: 'dist/tic-tac-toe',
+        copyFiles: ['index.html', 'public']
     }
 ];

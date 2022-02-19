@@ -8,7 +8,10 @@
   "workspaces": [
     "exercise-counter",
     "ze-list",
-    "heart-rate"
+    "heart-rate",
+    "calculator",
+    "vjs-game-of-life",
+    "tic-tac-toe"
   ],
   "scripts": {
     "build": "yarn run-ts scripts/build && workbox generateSW workbox-config.js",
