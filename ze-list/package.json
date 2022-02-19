@@ -2,6 +2,7 @@
   "name": "ze-list",
   "version": "1.0.0",
   "main": "index.html",
+  "license": "MIT",
   "scripts": {
     "start": "concurrently \"yarn:dev\" \"yarn:tailwind\" \"yarn:typecheck\" -k --kill-others-on-fail -p \"{name}|\" -n \"FE,TW,TS\" -c \"green,cyan,blue\"",
     "dev": "cd .. && yarn dev ze-list",

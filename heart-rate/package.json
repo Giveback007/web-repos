@@ -1,0 +1,24 @@
+{
+  "name": "heart-rate",
+  "version": "1.0.0",
+  "main": "index.html",
+  "license": "MIT",
+  "scripts": {
+    "start": "concurrently \"yarn:typecheck\" \"yarn:dev\" -k --kill-others-on-fail -p \"{name}|\" -n \"TS,FE\" -c \"cyan,blue\"",
+    "typecheck": "tsc --watch --preserveWatchOutput"
+  },
+  "dependencies": {
+    "@giveback007/browser-utils": "^0.3.3",
+    "@giveback007/util-lib": "^0.25.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-icons": "^4.2.0",
+    "smoothie": "^1.36.0",
+    "spectre.css": "^0.5.9"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.39",
+    "@types/react-dom": "^17.0.11",
+    "@types/web-bluetooth": "^0.0.12"
+  }
+}

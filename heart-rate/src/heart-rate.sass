@@ -1,0 +1,90 @@
+#heart-rate
+  min-height: 100vh
+  display: flex
+  flex-direction: column
+  h1, h2, h3, h4, h5
+    text-align: center
+    font-family: Lato
+  h1
+    font-size: 4em
+  h2
+    margin: 0
+    margin-bottom: 15px
+    font-size: 3em
+  h3
+    font-size: 2em
+  
+
+  #toggle-speak
+    position: fixed
+    top: 10px
+    left: 10px
+    width: 60px
+    height: 60px
+    font-size: 25px
+
+  #toggle-interm-speak
+    position: fixed
+    top: 80px
+    left: 10px
+    width: 60px
+    height: 60px
+    font-size: 25px
+
+  #bt-connect
+    button
+      font-size: 25px
+      margin: auto
+      margin-bottom: 18px
+      width: 200px!important
+      height: 80px!important
+      border-radius: 20px
+      &:hover
+        cursor: pointer
+
+  #hr-head
+    // min-height: 120px
+    display: flex
+    align-items: center
+    justify-content: center
+
+  #hr-avg
+    display: flex
+    flex-direction: column
+    
+  .hr-input
+    text-align: center
+    border: 1px solid grey
+    width: 200px
+    height: 90px
+    font-size: 75px
+
+  div.hr-input
+    display: flex
+    justify-content: center
+    align-items: center
+    &:hover
+      cursor: pointer
+      background-color: rgba(0, 0, 0, 0.05)
+    &.upperLimit
+      color: red
+    &.lowerLimit
+      color: blue
+
+  #hr-up-low
+    flex: 1
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    h3
+      margin: 30px 15px
+    button
+      font-size: 50px
+      height: 65px
+      width: 200px
+    div
+      button
+        font-size: 30px
+        height: 60px
+        width: 60px

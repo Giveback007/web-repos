@@ -1,0 +1,1 @@
+- remove react icons

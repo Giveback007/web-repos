@@ -21,7 +21,5 @@ import * as effects from './effects.js'
     /** Init effects */
     Object.values(effects).forEach(eff => eff());
 
-    subscribe((s) => {
-      render(app(s), elm('root'));
-    }, true);
+    subscribe((s) => render(app(s), elm('root')), true);
 })();

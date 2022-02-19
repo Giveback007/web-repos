@@ -17,6 +17,13 @@ import { devBrowser } from 'build-dev';
                 toDir: '.cache/ze-list',
                 copyFiles: ['index.html', 'public']
             });
+        case 'heart-rate':
+            return devBrowser({
+                fromDir: 'heart-rate/src',
+                entryFile: 'main.tsx',
+                toDir: '.cache/heart-rate',
+                copyFiles: ['index.html', 'public']
+            });
         default:
             throw new Error(`"${type}" not implemented`);
     }

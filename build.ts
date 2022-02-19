@@ -28,6 +28,7 @@ setTimeout(async () => {
             reloadDebounce: 100,
             reloadOnRestart: true,
             ghostMode: false,
+            port: 5000,
         });
 
         onProcessEnd(() => {
@@ -55,8 +56,15 @@ const projects: Opts[] = [
     /* -- Ze-List -- */
     {
         fromDir: 'ze-list/src',
-        entryFile: 'index.tsx',
+        entryFile: 'main.tsx',
         toDir: 'dist/ze-list',
+        copyFiles: ['index.html', 'public']
+    },
+    /* -- Heart-Rate -- */
+    {
+        fromDir: 'heart-rate/src',
+        entryFile: 'main.tsx',
+        toDir: 'dist/heart-rate',
         copyFiles: ['index.html', 'public']
     }
 ];

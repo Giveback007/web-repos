@@ -1,0 +1,42 @@
+:root
+  font-size: 25px
+
+*
+  box-sizing: border-box
+  scroll-behavior: smooth
+
+html, body
+  margin: 0
+  padding: 0
+  font-family: Arial, sans-serif
+
+.app-menu-button
+  position: fixed
+  display: flex
+  align-items: center
+  justify-content: center
+  left: 12px
+  bottom: 12px
+  width: 50px
+  height: 50px
+  font-size: 42px
+  padding: 0
+  z-index: 999
+
+input[type='number']
+  -moz-appearance: textfield
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button
+  -webkit-appearance: none
+
+body // scrollbar css props
+  &::-webkit-scrollbar
+    width: 0.4rem
+  &::-webkit-scrollbar-track
+    background: #bcc3ce
+  &::-webkit-scrollbar-thumb
+    background: #66758c
+  &.drawer-open
+    height: 100vh
+    overflow-y: hidden

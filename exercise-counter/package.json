@@ -2,6 +2,7 @@
     "name": "exercise-counter",
     "version": "1.0.0",
     "main": "index.html",
+    "license": "MIT",
     "scripts": {
         "start": "cd .. && yarn dev exercise-counter"
     },
