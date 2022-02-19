@@ -1,9 +1,18 @@
 // https://github.com/brainsatplay/dev-build#example-build-file
 import { devBrowser } from 'build-dev';
+import { projects } from './projects';
 
 (function run([type]) {
+    const idx = projects.findIndex(x => x.fromDir.includes(type));
+    if (idx === -1) throw new Error(`[type: ${type}] not found in [projects.ts]`);
+    const opts = {...projects[idx]};
+    opts.toDir.replace('dist/', '.cache');
+
+    return devBrowser(opts);
+
     switch (type) {
         case 'exercise-counter':
+
             return devBrowser({
                 fromDir: 'exercise-counter',
                 entryFile: 'main.js',
@@ -22,6 +31,13 @@ import { devBrowser } from 'build-dev';
                 fromDir: 'heart-rate/src',
                 entryFile: 'main.tsx',
                 toDir: '.cache/heart-rate',
+                copyFiles: ['index.html', 'public']
+            });
+        case 'calculator':
+            return devBrowser({
+                fromDir: 'calculator',
+                entryFile: 'main.js',
+                toDir: '.cache/calculator',
                 copyFiles: ['index.html', 'public']
             });
         default:

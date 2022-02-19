@@ -11,9 +11,9 @@
     "heart-rate"
   ],
   "scripts": {
-    "build": "yarn run-ts build && workbox generateSW workbox-config.js",
-    "build:test": "yarn build && yarn run-ts build test",
-    "dev": "yarn run-ts dev",
+    "build": "yarn run-ts scripts/build && workbox generateSW workbox-config.js",
+    "build:test": "yarn build && yarn run-ts scripts/build test",
+    "dev": "yarn run-ts scripts/dev",
     "run-ts": "node --unhandled-rejections=warn --enable-source-maps --trace-warnings -r esbuild-register",
     "killall-node:windows": "taskkill /F /IM node.exe"
   },

@@ -2,8 +2,7 @@
 import { buildBrowser, copy } from 'build-dev';
 import historyApiFallback from 'connect-history-api-fallback';
 import browserSync from "browser-sync";
-
-type Opts = Parameters<typeof buildBrowser>[0];
+import { projects } from './projects';
 
 const onProcessEnd = (fct: (exitCode: number) => unknown) =>
     [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(ev => process.on(ev, fct));
@@ -45,26 +44,3 @@ setTimeout(async () => {
 
 
 // ~--~ PROJECT BUILD OPTIONS ~--~ //
-const projects: Opts[] = [
-    /* -- Exercise-Counter -- */
-    {
-        fromDir: 'exercise-counter',
-        entryFile: 'main.js',
-        toDir: 'dist/exercise-counter',
-        copyFiles: ['index.html', 'public']
-    },
-    /* -- Ze-List -- */
-    {
-        fromDir: 'ze-list/src',
-        entryFile: 'main.tsx',
-        toDir: 'dist/ze-list',
-        copyFiles: ['index.html', 'public']
-    },
-    /* -- Heart-Rate -- */
-    {
-        fromDir: 'heart-rate/src',
-        entryFile: 'main.tsx',
-        toDir: 'dist/heart-rate',
-        copyFiles: ['index.html', 'public']
-    }
-];

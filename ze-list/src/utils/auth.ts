@@ -1,5 +1,6 @@
 type LoginTypes = 
     | 'google'
+    | 'twitter'
 
 // TODO: handle already sign in
 export class Auth {

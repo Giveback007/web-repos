@@ -40,27 +40,38 @@
     <link rel="apple-touch-icon" href="public/apple-icon-180.jpg">
 </head>
 <body>
-    <a href="./exercise-counter/index.html"><button>
-        <img src="./exercise-counter/public/favicon-196.png"/>
-        <h1>Exercise Counter</h1>
-    </button></a>
-
-    <a href="./ze-list/index.html"><button>
-        <img src="./ze-list/public/favicon-196.png"/>
-        <h1>Ze-List</h1>
-    </button></a>
-
-    <a href="./heart-rate/index.html"><button>
-        <img src="./heart-rate/public/favicon-196.png"/>
-        <h1>Heart Rate</h1>
-    </button></a>
-
     <script>
         if ("serviceWorker" in navigator) addEventListener('load', () => {
             navigator.serviceWorker
                 .register("/sw.js")
                 .catch((err) => console.log("Service worker registration failed", err));
         });
+
+        const projects = [
+            ['exercise-counter', 'Exercise Counter'],
+            ['ze-list', 'Ze-List'],
+            ['heart-rate', 'Heart Rate'],
+            ['calculator', 'Calculator'],
+            ['vjs-game-of-life', 'vJS Game of Life'],
+        ];
+
+        projects.forEach(([folder, name]) => {
+            const a = document.createElement('a');
+            const btn = document.createElement('button');
+            const img = document.createElement('img');
+            const h1 = document.createElement('h1');
+
+            a.href = `./${folder}/index.html`;
+            a.appendChild(btn);
+
+            btn.appendChild(img);
+            btn.appendChild(h1);
+
+            img.src = `./${folder}/public/favicon-196.png`;
+            h1.innerText = name;
+
+            document.body.appendChild(a);
+        })
     </script>
     
 </body>

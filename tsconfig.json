@@ -76,8 +76,7 @@
     "exclude": [
         "node_modules",
         "playground",
-        "build.ts",
-        "dev.ts"
+        "scripts/**/*",
     ],
     "include": ["./**/*", "types.d.ts"],
 }
