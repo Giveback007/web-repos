@@ -6,9 +6,11 @@ export function exercisesView(s) {
     const {
       exercises, selectedExercise, //exerciseStart,
     } = s;
+
+    if (!exercises.length) return '';
   
     const [exrs] = getExr(selectedExercise);
-    const numType = exrs?.numType;
+    const countType = exrs?.countType;
     const countTotal = exrs?.data?.count;
     
     const showWeek = exrs ? Array(7).fill(0).map((_, i) => {
@@ -27,7 +29,7 @@ export function exercisesView(s) {
           ${exercises.map(ex => exerciseBtn(ex, selectedExercise))}
         </div>
   
-        ${ifVal(selectedExercise && exerciseBody({ countTotal, numType }))}
+        ${ifVal(selectedExercise && exerciseBody({ countTotal, countType }))}
         <div style="border: solid 3px gray; border-left: none; border-right: none; padding: 0.2rem;"></div>
         <div id="submit-day">
           <input type="date" id="submit-day-input" />
@@ -48,16 +50,14 @@ export function exercisesView(s) {
 }
 
 
-const exerciseBtn = ({ name }, selEx) => {
-    return html`<button
-      class="${ifVal(selEx === name && 'active')}"
-      @click=${() => setState({ selectedExercise: name })}
-    >${name}</button>`;
-}
+const exerciseBtn = ({ name }, selEx) => html`<button
+  class="${ifVal(selEx === name && 'active')}"
+  @click=${() => setState({ selectedExercise: name })}
+>${name}</button>`;
 
 const exerciseBody = (props) => {
-  const { countTotal = 0, numType = 'reps' } = props;
-  return html`<div id="exercise-input">
+  const { countTotal = 0, countType = 'count' } = props;
+  return html`<div id="exercise-input" class="justify-flex">
       <input
           id="exercise-add"
           type="number"
@@ -77,7 +77,7 @@ const exerciseBody = (props) => {
       }}>Reset</button>
   </div>
 
-  <h1 id="todays-total">${capFirst(numType)}: ${countTotal}</h1>`;
+  <h1 id="todays-total">${capFirst(countType)}: ${countTotal}</h1>`;
 }
 
 const getDt = (addDay = 0) => {

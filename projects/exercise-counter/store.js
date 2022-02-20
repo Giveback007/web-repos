@@ -1,6 +1,20 @@
 import { stateManager } from './libs/state-manager.js';
-import { clone } from './libs/utils.js';
+import { arrRmIdx, clone } from './libs/utils.js';
 const { log } = console;
+
+export function removeExercise(name) {
+  const { exercises } = getState();
+  log({exercises})
+  const idx = exercises.findIndex(el => el.name === name);
+  setState({ exercises: arrRmIdx(exercises, idx) });
+}
+
+export function addExercise({ countType, name }) {
+  const { exercises: arr } = getState();
+  const exercises = [...arr, { name, countType, data: { count: 0 }}];
+
+  setState({ exercises });
+}
 
 export function setNumToExercise(num, date = null) {
   const { selectedExercise, ...s } = getState();

@@ -7,6 +7,10 @@ html, body {
   font-family: Arial, sans-serif;
 }
 
+.justify-flex {
+  display: flex;
+  justify-content: center;
+}
 
 /* --GENERAL-- */
 body {
@@ -56,8 +60,7 @@ button:active {
 
 .exercises-view #exercise-input {
   padding-top: 1rem;
-  display: flex;
-  justify-content: center;
+  
 }
 
 .exercises-view #exercise-input input {
@@ -89,3 +92,4 @@ button:active {
 .exercises-view #submit-day button {
   width: 6rem;
 }
+

@@ -1,5 +1,13 @@
 const { log, error } = console;
 
+export const arrRmIdx = (arr, idx) => {
+  const x = [...arr];
+  x.splice(idx,)
+  arr.slice(idx, 1);
+
+  return x;
+}
+
 export const elm = (id) => {
   const el = document.getElementById(id);
   if (!el) error('!el:', { id });
