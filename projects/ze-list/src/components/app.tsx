@@ -18,7 +18,7 @@ export const App = link((s) => objExtract(s, [
 }) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    return <div className='bg-gray-100 min-h-screen pb-[50vh]'>
+    return <div className='bg-gray-100 min-h-screen pb-[100vh]'>
         <TopBar 
             fixed
             addSpacer

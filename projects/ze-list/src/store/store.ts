@@ -1,6 +1,7 @@
 import { StateManager, stateManagerReactLinker } from "@giveback007/browser-utils";
 import { isType, min } from "@giveback007/util-lib";
-import type { TextItems } from "../utils/utils";
+import { list } from "../assets/starting-list";
+import { TextItems, textToObjs } from "../utils/utils";
 import type { AllActions } from "./actions";
 
 /** App constants `read only`  */
@@ -22,7 +23,6 @@ export type State = {
     doScramble: boolean;
     doSpeak: boolean;
 
-    // TODO
     autoNext: boolean;
 
     // -- MODALS -- //
@@ -45,7 +45,7 @@ export type State = {
 }
 
 export const store = new StateManager<State, AllActions>({
-    items: [],
+    items: textToObjs(list),
     selectedItem: -1,
     currentItemReading: null,
     doDingForTime: false,
@@ -61,7 +61,7 @@ export const store = new StateManager<State, AllActions>({
     timeNow: cst.appStartTime,
     currentUser: null,
 }, {
-    id: 'ListMem-v1',
+    id: 'ListMem-v2',
     useKeys: ['items', 'timePerItem', 'autoNext']
 });
 

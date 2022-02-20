@@ -35,7 +35,6 @@ class Speaker {
         for (let i = 0; i < this.readingList.length; i++) {
             if (!this.doRead) return;
             await this.readItem(i);
-            await wait(750);
         }
   
         this.doRead = false

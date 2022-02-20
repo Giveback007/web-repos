@@ -34,7 +34,7 @@ function randomEmoji(chance, arr) {
         replaceHTML(elm("aiTalk"), `"${arr[rand][1]}"`);
     }
 }
-
+[].forEach
 var winCond = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
     [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6],
@@ -47,13 +47,14 @@ var gameMain = [
 ];
 
 var chars = [
-    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13"
-]//.map(x => 'icon' + x);
+    "01", "02", "03", "04", "05", "06",
+    "07", "08", "09", "10", "11", "12", "13"
+].map(x => 'icon' + x);
 
 function charsBtnGen() {
     for (var i = 0; i < chars.length; i++) {
-        addHTML(elm("charSymbols"), '<button id="char' + i + '" class="charBtn" onclick="chrChoose(' + i + ');"><img src="./public/emojis/icon' + chars[i] + '.png" style="width: 25px"></button>');
-        addHTML(elm("menu-chars"), '<button id="char-chng' + i + '" class="charBtn" onclick="chrChange(' + i + ');"><img src="./public/emojis/icon' + chars[i] + '.png" style="width: 25px"></button>');
+        addHTML(elm("charSymbols"), '<button id="char' + i + '" class="charBtn" onclick="chrChoose(' + i + ');"><img src="' + emoji(chars[i]) + '" style="width: 25px"></button>');
+        addHTML(elm("menu-chars"), '<button id="char-chng' + i + '" class="charBtn" onclick="chrChange(' + i + ');"><img src="' + emoji(chars[i]) + '" style="width: 25px"></button>');
     }
 }
 
@@ -117,7 +118,7 @@ window.chrChange = (x) => {
         for (var j = 0; j < 9; j++) {
             if (gameMain[j] === aiChar) {
                 gameMain[j] = chars[y];
-                replaceHTML(elm("div" + j), "<span style='display: flex;'><img src='./public/emojis/icon" + chars[y] + ".png' style='width: 50px; margin: auto;'></span>");
+                replaceHTML(elm("div" + j), "<span style='display: flex;'><img src='" + emoji(chars[y]) + "' style='width: 50px; margin: auto;'></span>");
             }
         }
         aiChar = chars[y];
@@ -126,9 +127,9 @@ window.chrChange = (x) => {
     for (var i = 0; i < 9; i++) {
         if (gameMain[i] === plChar) {
             gameMain[i] = chars[x];
-            replaceHTML(elm("div" + i), "<span style='display: flex;'><img src='./public/emojis/icon" + chars[x] + ".png' style='width: 50px; margin: auto;'></span>");
+            replaceHTML(elm("div" + i), "<span style='display: flex;'><img src='" + emoji(chars[x]) + "' style='width: 50px; margin: auto;'></span>");
         } else if (gameMain[i] === "0") {
-            replaceHTML(elm("transpChars" + i), "<span style='display: flex;'><img src='./public/emojis/icon" + chars[x] + ".png' style='width: 50px; margin: auto;'></span>");
+            replaceHTML(elm("transpChars" + i), "<span style='display: flex;'><img src='" + emoji(chars[x]) + "' style='width: 50px; margin: auto;'></span>");
         }
     }
     plChar = chars[x];
@@ -162,11 +163,9 @@ window.startGame = () => {
     randChar();
     var pos = document.getElementsByClassName("pos");
     for (var i = 0; i < 9; i++) {
-        replaceHTML(pos[i], '<div><span class="pos-span"><span id="transpChars' + i + '"><span style="display: flex;"><img src="./public/emojis/icon' + plChar + '.png" style="width: 50px; margin: auto;"></span></span></span></div>');
+        replaceHTML(pos[i], '<div><span class="pos-span"><span id="transpChars' + i + '"><span style="display: flex;"><img src="' + emoji(plChar) + '" style="width: 50px; margin: auto;"></span></span></span></div>');
     }
-    if (!plFirst) {
-        aiTurn();
-    }
+    if (!plFirst) aiTurn();
 }
 // --- /\ /\ /\  Before Game Start /\ /\ /\ ---
 
@@ -241,15 +240,17 @@ function restart(x) {
 // </> Write a Move
 function writeOnGame(pos, char) {
     gameMain[pos] = char;
-    replaceHTML(elm("pos" + pos), "<div  class='taken' id='div" + pos + "'><span style='display: flex;'><img src='./public/emojis/icon" + char + ".png' style='width: 50px; margin: auto;'></span></div>");
+    replaceHTML(elm("pos" + pos), "<div  class='taken' id='div" + pos + "'><span style='display: flex;'><img src='" + emoji(char) + "' style='width: 50px; margin: auto;'></span></div>");
 }
 
 // </> Ai Triger and Equal Value Ai Move Randomizer
 function aiTurn() {
     var posArr = ai();
     var ran = Math.floor(Math.random() * posArr.length);
-    writeOnGame(posArr[ran], aiChar);
-    checkVictory(aiChar);
+    setTimeout(() => {
+        writeOnGame(posArr[ran], aiChar);
+        checkVictory(aiChar);
+    }, 350);
 }
 
 // </> Player Click

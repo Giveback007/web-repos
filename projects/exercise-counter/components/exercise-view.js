@@ -18,8 +18,8 @@ export function exercisesView(s) {
       const num = exrs.data[dt] || 0;
       const str = i ? dt : 'Today';
   
-      return html`<div style="display: flex; font-size: x-large; border-bottom: solid 1px lightgray; padding: 0.2rem;">
-        <div style="min-width: 14.5rem; text-align: end;">${str}: </div>
+      return html`<div style="display: flex; font-size: large; border-bottom: solid 1px lightgray; padding: 0.2rem;">
+        <div style="min-width: 10rem; text-align: end;">${str}: </div>
         <div style="margin-left: 1rem">${num}</div>
       </div>`;
     }) : null;

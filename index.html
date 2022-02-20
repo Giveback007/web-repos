@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,12 +14,12 @@
         body {
             display: flex;
             flex-direction: column;
-            max-width: 450px;
+            max-width: 650px;
             margin: auto;
+            font-family: Arial, sans-serif;
         }
-        
+
         button {
-            margin: 0.2rem;
             height: 3.5rem;
             padding: 0.2rem 2rem;
             width: 100%;
@@ -29,17 +30,44 @@
         }
 
         img { max-height: 100%; }
+        h2 { text-align: center; }
+        button h2 {
+            flex: 1;
+            margin-left: 0.4rem;
+        }
         
-        h1 { flex: 1; }
+        section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+        }
 
-        a { text-decoration: none; }
+        section a {
+            text-decoration: none;
+            width: 48%;
+            margin: 0.2rem 0;
+        }
+
+        @media only screen and (max-width: 600px) {
+            section a {
+                width: 90%;
+            }
+        }
     </style>
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="icon" type="image/png" sizes="196x196" href="public/favicon-196.png">
     <link rel="apple-touch-icon" href="public/apple-icon-180.jpg">
 </head>
+
 <body>
+    <h2>Useful:</h2>
+    <section id="useful"></section>
+
+    <hr />
+    <h2>Play:</h2>
+    <section id="play"></section>
+
     <script>
         if ("serviceWorker" in navigator) addEventListener('load', () => {
             navigator.serviceWorker
@@ -47,34 +75,43 @@
                 .catch((err) => console.log("Service worker registration failed", err));
         });
 
+        const elm = (id) => {
+            const el = document.getElementById(id);
+            if (!el) error('!el:', { id });
+            
+            return el;
+        }
+
+        const makeHTML = (html) =>
+            new DOMParser().parseFromString(html, "text/html").body.childNodes;
+
         const projects = [
             ['exercise-counter', 'Exercise Counter'],
             ['ze-list', 'Ze-List'],
             ['heart-rate', 'Heart Rate'],
+        ];
+
+        const playProjects = [
             ['calculator', 'Calculator'],
             ['vjs-game-of-life', 'vJS Game of Life'],
             ['react-game-of-life', 'React.js Game of Life'],
             ['tic-tac-toe', 'Unbeatable Tic-Tac-Toe'],
         ];
 
-        projects.forEach(([folder, name]) => {
-            const a = document.createElement('a');
-            const btn = document.createElement('button');
-            const img = document.createElement('img');
-            const h1 = document.createElement('h1');
+        const fct = ([folder, name]) => makeHTML(
+            `<a href="./${folder}/index.html">
+                <button>
+                    <img src="./${folder}/public/favicon-196.png">
+                    <h2>${name}</h2>
+                </button>
+            </a>`
+        );
 
-            a.href = `./${folder}/index.html`;
-            a.appendChild(btn);
-
-            btn.appendChild(img);
-            btn.appendChild(h1);
-
-            img.src = `./${folder}/public/favicon-196.png`;
-            h1.innerText = name;
-
-            document.body.appendChild(a);
-        })
+        projects.map(fct).forEach(nodes => elm('useful').append(...nodes));
+        playProjects.map(fct).forEach(nodes => elm('play').append(...nodes));
     </script>
-    
+
 </body>
+
 </html>
+

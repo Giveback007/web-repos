@@ -1,11 +1,10 @@
 const { log, error } = console;
 
 export const arrRmIdx = (arr, idx) => {
-  const x = [...arr];
-  x.splice(idx,)
-  arr.slice(idx, 1);
+  const newArr = [...arr];
+  newArr.splice(idx, 1)
 
-  return x;
+  return newArr;
 }
 
 export const elm = (id) => {

@@ -52,11 +52,4 @@ export const projects: Opts[] = [
         toDir: 'dist/tic-tac-toe',
         copyFiles: ['index.html', 'public']
     },
-    /* -- Tic-Tac-Toe -- */
-    {
-        fromDir: 'tic-tac-toe',
-        entryFile: 'main.js',
-        toDir: 'dist/tic-tac-toe',
-        copyFiles: ['index.html', 'public']
-    }
 ];
