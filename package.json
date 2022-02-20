@@ -5,14 +5,7 @@
   "author": "Dovydas Stirpeika",
   "license": "MIT",
   "private": true,
-  "workspaces": [
-    "exercise-counter",
-    "ze-list",
-    "heart-rate",
-    "calculator",
-    "vjs-game-of-life",
-    "tic-tac-toe"
-  ],
+  "workspaces": ["projects/*"],
   "scripts": {
     "build": "yarn run-ts scripts/build && workbox generateSW workbox-config.js",
     "build:test": "yarn build && yarn run-ts scripts/build test",
