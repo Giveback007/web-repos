@@ -927,6 +927,13 @@
   dependencies:
     tslib "~2.0.3"
 
+"@giveback007/util-lib@^0.25.2":
+  version "0.25.2"
+  resolved "https://registry.yarnpkg.com/@giveback007/util-lib/-/util-lib-0.25.2.tgz#9176942f53525fc7b560473e9904d9af1264274d"
+  integrity sha512-prQHZ4BCOsBWXrNUDtdgMzG2hlUhBK9yTxJE9FHQqP5glM9BLlUwhW+2vg/JhbyZ/nlMZHFjiq/TDbICefaRDA==
+  dependencies:
+    tslib "~2.0.3"
+
 "@giveback007/util-lib@~0.22.6":
   version "0.22.7"
   resolved "https://registry.yarnpkg.com/@giveback007/util-lib/-/util-lib-0.22.7.tgz#f59d36cc8f5fabac2036e46c300d549f53f5a1f3"
@@ -3363,6 +3370,16 @@ my-alyce-component-lib@^0.1.24:
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/my-alyce-component-lib/-/my-alyce-component-lib-0.1.24.tgz#f1a0d29e08874a26961038e2ee7a450a49fc1b31"
   integrity sha512-VR21HYPOwzuaidck6/lrppRL0WB+0z+Jn5akD0qcDmNQCZgjaBUDWcAfsQzc5WBdrnBiqZt6DuJ3B6zvaM0ThA==
+  dependencies:
+    "@giveback007/util-lib" "^0.25.1"
+    classnames "^2.3.1"
+    react-hook-form "^7.26.1"
+    tslib "~2.3.1"
+
+my-alyce-component-lib@^0.1.26:
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/my-alyce-component-lib/-/my-alyce-component-lib-0.1.26.tgz#d073160ac8888af02250ae4c7f98185633093d68"
+  integrity sha512-TiTA+pp4Y7/G6V+FpLMipD97j7qMBG4/Zjci0jVynRq6YAwathnaQU8cfX4fm6WcgIdVC6Vb4NyWJv2Y42Y1pw==
   dependencies:
     "@giveback007/util-lib" "^0.25.1"
     classnames "^2.3.1"

@@ -11,6 +11,7 @@
     "build:test": "yarn build && yarn run-ts scripts/build test",
     "dev": "yarn run-ts scripts/dev",
     "run-ts": "node --unhandled-rejections=warn --enable-source-maps --trace-warnings -r esbuild-register",
+    "play": "yarn run build-dev play web",
     "killall-node:windows": "taskkill /F /IM node.exe"
   },
   "devDependencies": {

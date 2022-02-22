@@ -1,4 +1,6 @@
 dist
 node_modules
 .cache
+.temp
 personal-notes.md
+playground
