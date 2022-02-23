@@ -9,8 +9,8 @@ export function AddWord(p: { exit: () => any }) {
     const [n, setN] = useState(store.getState().memorize.length + 1);
 
     const disableSubmit = !q || !a;
-    const handleSubmit = (imediate: boolean) => {
-        addQnA({ q, a, imediate });
+    const handleSubmit = (immediate: boolean) => {
+        addQnA({ q, a, immediate });
         setN(n + 1);
         setQ('');
         setA('');
@@ -40,13 +40,13 @@ export function AddWord(p: { exit: () => any }) {
             disabled={disableSubmit}
             onClick={() => handleSubmit(true)}
             style={{ marginBottom: '0.5rem' }}
-        >Add Imediate</Button>
+        >{disableSubmit ? '!' : '🔁 Add To Review'}</Button>
         <Button
             size='auto'
             type={btnType}
             disabled={disableSubmit}
             onClick={() => handleSubmit(false)}
-            style={{height: '3.5rem'}}
-        >{disableSubmit ? 'Fill Out Question and Answer' : 'Add QnA'}</Button>
+            style={{height: '3rem'}}
+        >{disableSubmit ? 'Fill Out Question and Answer' : '📥 Add To Storage'}</Button>
     </Modal>;
 }

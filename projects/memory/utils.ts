@@ -130,3 +130,10 @@ export function calcMem(mem: Memory, success: boolean) {
     
     return { ...mem, score, timing, reviewOn };
 }
+
+export function arrRmIdx<T>(arr: T[], idx: number) {
+    const newArr = [...arr];
+    newArr.splice(idx, 1);
+
+    return newArr;
+}

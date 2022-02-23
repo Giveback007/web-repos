@@ -3,6 +3,7 @@
         "gapi",
         "jsoneditor",
         "tailwindcss",
-        "typecheck"
+        "typecheck",
+        "Vals"
     ]
 }

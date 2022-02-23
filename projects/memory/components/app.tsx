@@ -4,10 +4,12 @@ import React, { Component } from "react";
 import { learnNewWord, link, State } from "../store";
 import { genSimplifiedTime } from "../utils";
 import { AddWord } from "./add-word-modal";
+import { ExportWordsModal } from "./export-words-modal";
+import { ImportWordsModal } from "./import-words-modal";
 import { QnaModal } from "./qna-modal";
 
 type S = {
-    modal: 'add-word' | 'q-n-a' | 'import-words' | null;
+    modal: 'add-word' | 'q-n-a' | 'import-words' | 'export-words' | null;
     selectedId: string | null;
 };
 
@@ -30,10 +32,6 @@ export const App = link(s => s, class extends Component<P, S> {
         } = this.props;
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
-    
-        // const reviewOn = memorize[0]?.reviewOn;
-        
-        // const tNextReview = reviewOn ? reviewOn - tNow : 'none';
 
         const nextWordTimer = (() => {
             if (!nextIncomingId) return null;
@@ -79,11 +77,15 @@ export const App = link(s => s, class extends Component<P, S> {
                     type='secondary'
                     style={{flex: 1}}
                     size='lg'
-                    onClick={() => this.setState({ modal: 'import-words' })}
+                    onClick={() => this.setState({ modal: 'export-words' })}
                 >Export Words</Button>
             </div>
 
-            <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Total Words: {memorize.length}</h1>
+            <div style={{display: 'flex', border: 'solid 1px lightgray'}}>
+                <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Stored Words: {notIntroduced.length}</h1>
+                <div style={{borderRight: 'solid 1px lightgray', margin: '0 0.3rem'}}/>
+                <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Review Words: {memorize.length}</h1>
+            </div>
 
             <div style={{marginTop: '1rem'}}>
                 {([
@@ -99,9 +101,10 @@ export const App = link(s => s, class extends Component<P, S> {
                 {nextWordTimer}
                 {readyWords}
                 {!ready && <Button
+                    disabled={!memorize.length}
                     onClick={() =>
                         this.setState({ modal: 'q-n-a', selectedId: memorize[0].id })}
-                >Skip Wait</Button>}
+                >{memorize.length ? 'Skip Wait' : 'No Words Added'}</Button>}
             </div>
 
             <br/>
@@ -111,7 +114,7 @@ export const App = link(s => s, class extends Component<P, S> {
                     type="primary"
                     disabled={!notIntroduced.length}
                     onClick={() => this.setState({ selectedId: learnNewWord() })}
-                >Learn New Word</Button>
+                >{notIntroduced.length ? 'Learn New Word' : 'No Words In Storage'}</Button>
                 {!!readyQnA.length && <>
                     <h1 style={{fontSize: '2rem', textAlign: 'center', marginBottom: '1rem'}}>READY WORDS:</h1>
                     
@@ -131,6 +134,8 @@ export const App = link(s => s, class extends Component<P, S> {
             
             {modal === 'q-n-a' && selectedId && <QnaModal mem={memoryDict[selectedId]} exit={() => this.setState({ modal: null, selectedId: null })} />}
             {modal === 'add-word' && <AddWord exit={() => this.setState({ modal: null })} />}
+            {modal === 'import-words' && <ImportWordsModal exit={() => this.setState({ modal: null })} />}
+            {modal === 'export-words' && <ExportWordsModal exit={() => this.setState({ modal: null })}/>}
         </div>
     }
 });

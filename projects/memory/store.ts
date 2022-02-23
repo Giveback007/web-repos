@@ -1,7 +1,8 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
+import { objKeys } from "@giveback007/util-lib";
 // import { StateManager } from "@giveback007/browser-utils/src/state-manager";
 import { arrToDict, Dict, dys, hrs, min, objVals, rand, sec } from "@giveback007/util-lib";
-import { calcMem, Memory } from "./utils";
+import { arrRmIdx, calcMem, Memory } from "./utils";
 
 /** const settings */
 export const set = {
@@ -110,8 +111,8 @@ export function timeFromMem(memorize: Memory[]) {
 }
 
 // -- STORE UTILS -- //
-export function addQnA({ q, a, imediate }: { q: string; a: string; imediate: boolean; }) {
-    const key = imediate ? 'memorize' : 'notIntroduced';
+export function addQnA({ q, a, immediate }: { q: string; a: string; immediate: boolean; }) {
+    const key = immediate ? 'memorize' : 'notIntroduced';
     const mem = new Memory(q, a);
 
     store.setState({ [key]: [...store.getState()[key], mem ] });
@@ -145,9 +146,26 @@ export function learnNewWord() {
     const { notIntroduced: ni, memorize } = store.getState();
     const idx = rand(0, ni.length - 1);
     const mem = ni[idx];
-    const notIntroduced = [...ni].splice(idx, 1);
-    debugger;
+    const notIntroduced = arrRmIdx(ni, idx);
     
     store.setState({ notIntroduced, memorize: [...memorize, mem] });
     return mem.id;
+}
+
+/** Take a list of   */
+export function importWords(obj: {
+    memorize: Memory[];
+    notIntroduced: Memory[]
+}) {
+    const { memorize, notIntroduced } = store.getState();
+    const meDict = arrToDict(memorize, 'id');
+    const niDict = arrToDict(notIntroduced, 'id');
+
+    obj.memorize.forEach(x => meDict[x.id] = x);
+    obj.notIntroduced.forEach(x => niDict[x.id] = x);
+
+    store.setState({
+        memorize: objVals(meDict),
+        notIntroduced: objVals(niDict),
+    });
 }
