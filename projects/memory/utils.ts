@@ -4,31 +4,25 @@ import { set } from "./store";
 
 export class Memory {
 
-    /**
-     * Multiplier for timing
-     */
-    score: number;
+    /** Multiplier for timing */
+    score: number = set.baseScore;
 
     /** Timing/interval added to review after last review */
-    timing: number;
+    timing: number = set.minTime;
 
     /** Next time this word will be reviewed */
-    reviewOn: number;
+    reviewOn: number = Date.now() + set.minTime;
 
-    readonly timeCreated: number;
+    /** Adds to score on success */
+    ease: number = set.baseEase;
 
-    readonly id: string;
+    readonly timeCreated: number = Date.now();
+    readonly id: string = uuid();
 
     constructor(
         public question: string,
         public answer: string
-    ) {
-        this.id = uuid();
-        this.timeCreated = Date.now();
-        this.score = set.minScore;
-        this.timing = set.timeOnFail;
-        this.reviewOn = this.timeCreated + set.timeOnFail;
-    }
+    ) { }
 };
 
 // /** Generate html from a string */
@@ -116,18 +110,26 @@ export const genSimplifiedTime = (ms: number, from: number = Date.now()) => {
 }
 
 export function calcMem(mem: Memory, success: boolean) {
-    const isInReview = mem.timing < set.reviewModeTiming;
+    let ease = mem.ease || set.baseEase;
+    let score = mem.score || set.baseScore;
+    let timing = mem.timing || set.minTime;
 
-    const tryScore = mem.score + (success ? set.scoreAdd : set.scoreSub);
-    const score = tryScore < set.minScore ? set.minScore : tryScore;
-    
-    const timing = Math.floor(isInReview ?
-            (success ? mem.timing * set.reviewMultiplier : set.timeOnFail)
-            :
-            (success ? mem.timing * mem.score : set.timeOnFail)
-    );
+    if (success) {
+        ease += set.easeAdd;
+        score += ease;
+        timing *= score;
+    } else {
+        ease -= set.easeSub;
+        score /= set.scoreDivide;
+        timing = set.minTime;
+    }
+
+    if (ease < set.minEase) ease = set.minEase;
+    if (score < set.minScore) score = set.minScore;
+    if (timing < set.minTime) timing = set.minTime;
+
     const reviewOn = Math.floor(Date.now() + timing);
-    
+
     return { ...mem, score, timing, reviewOn };
 }
 

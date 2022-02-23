@@ -16,7 +16,7 @@ import { App } from './components/app';
         store.setState(times);
         
         clearTimeout(tm);
-        const use1Sec = times.nReadyIn5min || times.nReadyIn1min;
+        const use1Sec = times.nReadyIn5min;
         tm = setTimeout(timer, use1Sec ? sec(1) : min(1));
     };
 

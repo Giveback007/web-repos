@@ -1,23 +1,32 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { objKeys } from "@giveback007/util-lib";
-// import { StateManager } from "@giveback007/browser-utils/src/state-manager";
-import { arrToDict, Dict, dys, hrs, min, objVals, rand, sec } from "@giveback007/util-lib";
+import { wks } from "@giveback007/util-lib";
+import { arrToDict, Dict, dys, min, objVals, rand, sec } from "@giveback007/util-lib";
 import { arrRmIdx, calcMem, Memory } from "./utils";
 
 /** const settings */
 export const set = {
-    /** Score to add on success */
-    scoreAdd: 0.2,
-    /** Score to subtract on fail */
-    scoreSub: -0.35,
+    /** Minimum time for review */
+    minTime: sec(3),
+
+
+    // -- Score is the multiplier of timing on success -- //
     /** Minimum score */
-    minScore: 1.15,
-    /** Time set on fail */
-    timeOnFail: sec(3),
-    /** (timing < n) -> "review mode" meaning diffrent timing on success */
-    reviewModeTiming: min(5),
-    /** Review multiplier */
-    reviewMultiplier: 1.45,
+    minScore: 1.1,
+    /** Score divide on fail */
+    scoreDivide: 3,
+    /** Starting score for a memory */
+    baseScore: 1.5,
+
+
+    // -- Ease is the number added to the score on success -- //
+    /** Starting ease for a memory */
+    baseEase: 0.5,
+    /** Minimum ease setting */
+    minEase: 0.05,
+    /** Ease add on success */
+    easeAdd: 0.15,
+    /** Ease subtract on fail */
+    easeSub: 0.35,
 } as const;
 
 // -- STORE -- //
@@ -38,10 +47,11 @@ export type State = {
     nextIncomingId: string | null;
 
     // -- TIME STATE -- //
-    nReadyIn1min: number,
     nReadyIn5min: number,
-    nReadyIn1hrs: number,
-    nReadyIn1dys: number,
+    nReadyToday: number,
+    nReadyTomorrow: number,
+    nReadyThisWeek: number,
+
     tNow: number;
 }
 
@@ -52,10 +62,10 @@ export const store = new StateManager<State>({
     readyQnA: [],
     nextIncomingId: null,
     
-    nReadyIn1min: 0,
     nReadyIn5min: 0,
-    nReadyIn1hrs: 0,
-    nReadyIn1dys: 0,
+    nReadyToday: 0,
+    nReadyTomorrow: 0,
+    nReadyThisWeek: 0,
     tNow: Date.now(),
 }, {
     id: 'memory-helper-v2',
@@ -77,13 +87,13 @@ export function timeFromMem(memorize: Memory[]) {
     const tNow = Date.now();
     
     const readyQnA: string[] = [];
-    let nReadyIn1min = 0;   const min1 = tNow + min(1);
-    let nReadyIn5min = 0;   const min5 = tNow + min(5);
-    let nReadyIn1hrs = 0;   const hrs1 = tNow + hrs(1);
-    let nReadyIn1dys = 0;   const dys1 = tNow + dys(1);
+    let nReadyIn5min =      0; const min5 = tNow + min(5);
+    let nReadyToday =       0; const dys1 = tNow + dys(1);
+    let nReadyTomorrow =    0; const dys2 = tNow + dys(2);
+    let nReadyThisWeek =    0; const wks1 = tNow + wks(1);
     let nextIncomingId: null | string = null;
 
-    /** Becouse memorize is sorted by `reviewOn`: */
+    /** Because memorize is sorted by `reviewOn`: */
     for (const { id, reviewOn: rw } of memorize) {
         if (rw < tNow) {
             readyQnA.push(id);
@@ -91,21 +101,21 @@ export function timeFromMem(memorize: Memory[]) {
         }
         
         if (!nextIncomingId) nextIncomingId = id;
+        if (rw < min5) nReadyIn5min++;
 
-        if (rw < min1) nReadyIn1min++;
-        else if (rw < min5) nReadyIn5min++;
-        else if (rw < hrs1) nReadyIn1hrs++;
-        else if (rw < dys1) nReadyIn1dys++;
+        if      (rw < dys1) nReadyToday++;
+        if (rw < dys2) nReadyTomorrow++;
+        if (rw < wks1) nReadyThisWeek++;
         else break;
     }
 
     return {
         nextIncomingId,
         readyQnA,
-        nReadyIn1min,
         nReadyIn5min,
-        nReadyIn1hrs,
-        nReadyIn1dys,
+        nReadyToday,
+        nReadyTomorrow,
+        nReadyThisWeek,
         tNow
     }
 }

@@ -22,12 +22,12 @@ export const App = link(s => s, class extends Component<P, S> {
 
     render() {
         const WordsString = ({ nReady, t }: { nReady: number, t: string }) =>
-            nReady ? <h1 style={{ fontSize: 'large', textAlign: 'center' }}>{`${nReady} Word${nReady > 1 ? 's' : ''} In < ${t}`}</h1> : null
+            <h1 style={{ fontSize: 'large', textAlign: 'center' }}>{`[${nReady}] ${t}`}</h1>;
 
         const { modal, selectedId } = this.state;
         const {
             memorize, readyQnA, memoryDict, tNow,
-            nReadyIn1min, nReadyIn5min, nReadyIn1hrs,
+            nReadyIn5min, nReadyToday, nReadyTomorrow, nReadyThisWeek,
             nextIncomingId, notIntroduced
         } = this.props;
 
@@ -89,10 +89,10 @@ export const App = link(s => s, class extends Component<P, S> {
 
             <div style={{marginTop: '1rem'}}>
                 {([
-                    [nReadyIn1hrs, '1 Day'],
-                    [nReadyIn1hrs, '1 Hrs'],
-                    [nReadyIn5min, '5 Min'],
-                    [nReadyIn1min, '1 Min'],
+                    [nReadyThisWeek, 'This Week'],
+                    [nReadyTomorrow, 'Tomorrow'],
+                    [nReadyToday, 'Today'],
+                    [nReadyIn5min, 'In < 5min'],
                 ] as const).map(([nReady, t]) => <WordsString {...{nReady, t}}/>) }
             </div>
                 
