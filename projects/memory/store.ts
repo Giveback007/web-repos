@@ -20,11 +20,11 @@ export const set = {
 
     // -- Ease is the number added to the score on success -- //
     /** Starting ease for a memory */
-    baseEase: 0.5,
+    baseEase: 0.3,
     /** Minimum ease setting */
     minEase: 0.05,
     /** Ease add on success */
-    easeAdd: 0.15,
+    easeAdd: 0.11,
     /** Ease subtract on fail */
     easeSub: 0.35,
 } as const;

@@ -114,23 +114,18 @@ export function calcMem(mem: Memory, success: boolean) {
     let score = mem.score || set.baseScore;
     let timing = mem.timing || set.minTime;
 
-    if (success) {
-        ease += set.easeAdd;
-        score += ease;
-        timing *= score;
-    } else {
-        ease -= set.easeSub;
-        score /= set.scoreDivide;
-        timing = set.minTime;
-    }
-
+    ease = success ? ease + set.easeAdd : ease - set.easeSub;
     if (ease < set.minEase) ease = set.minEase;
+    
+    score = success ? score + ease : score / set.scoreDivide;
     if (score < set.minScore) score = set.minScore;
+
+    timing = success ? timing * score : set.minTime;
     if (timing < set.minTime) timing = set.minTime;
 
     const reviewOn = Math.floor(Date.now() + timing);
-
-    return { ...mem, score, timing, reviewOn };
+    
+    return { ...mem, score, timing, reviewOn, ease };
 }
 
 export function arrRmIdx<T>(arr: T[], idx: number) {

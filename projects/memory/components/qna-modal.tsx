@@ -71,7 +71,7 @@ function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
 
     const onSuccess = calcMem(mem, true);
     const onFail = calcMem(mem, false);
-
+    
     return <>
         <h1 style={{fontSize: "large"}}>Q:</h1>
         <p style={{fontSize: "1.75rem"}}>{mem.question}</p>
@@ -83,10 +83,12 @@ function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
             <div style={{...statsStyles, borderRight: 'solid 2px lightgray'}}>
                 <div>On Fail:</div>
                 <div>Score: {onFail.score.toFixed(2)}</div>
+                <div>Ease : {onFail.ease.toFixed(2)}</div>
             </div>
             <div style={{...statsStyles}}>
                 <div>On Success:</div>
                 <div>Score: {onSuccess.score.toFixed(2)}</div>
+                <div>Ease : {onSuccess.ease.toFixed(2)}</div>
             </div>
         </div>
 
