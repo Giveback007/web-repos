@@ -1,0 +1,76 @@
+.nav-drawer {
+    div.flex {
+        display: flex;
+        justify-content: center;
+        font-size: x-large;
+    }
+
+    
+}
+// #root > nav > ul:nth-child(1) > li:nth-child(2)
+.top-bar {
+    ul li {
+        @media only screen and (max-width: 650px) {
+            padding: 0.3rem;
+        }
+
+        span h1, button {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+    }
+    .upload-btn {
+        
+        // font-size: medium!important;
+        @media only screen and (max-width: 650px) {
+            // font-size: medium;
+            padding: 0.3rem;
+        }
+    }
+
+    .center-content {
+        .xl-time {
+            font-size: medium;
+            @media only screen and (max-width: 650px) {
+                display: none;
+                
+            }
+        }
+        font-size: x-large;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    
+
+    span svg {
+        width: 2rem;
+    }
+    
+    @media only screen and (max-width: 650px) {
+        padding: 0.2rem!important;
+    }
+}
+
+.calnedar-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    .calnedar-inner-container {
+        border: solid 1px lightgray;
+        border-radius: 0.5rem;
+        margin: 0.15rem;
+        padding: 0.25rem;
+        min-width: 15rem;
+        max-width: 25rem;
+        @media only screen and (max-width: 650px) {
+            border-radius: 0.1rem;
+            padding: 0.1rem;
+        }
+    }
+}
+
+// #root > nav > ul:nth-child(1) > li:nth-child(3) > 
