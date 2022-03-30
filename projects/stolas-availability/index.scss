@@ -10,14 +10,15 @@
 // #root > nav > ul:nth-child(1) > li:nth-child(2)
 .top-bar {
     ul li {
-        @media only screen and (max-width: 650px) {
+        // @media only screen and (max-width: 650px) {
             padding: 0.3rem;
-        }
+        // }
 
         span h1, button {
             height: 100%;
-            display: flex;
-            align-items: center;
+            // min-width: 65px;
+            // display: flex;
+            // align-items: center;
         }
     }
     .upload-btn {
@@ -74,3 +75,20 @@
 }
 
 // #root > nav > ul:nth-child(1) > li:nth-child(3) > 
+
+#month-selector {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: white;
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 -2px 5px 0px lightgrey;
+    span h1, button {
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+}

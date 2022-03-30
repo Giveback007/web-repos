@@ -1,11 +1,11 @@
-import { hours, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
+import { hours, isType, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
 import { read, utils } from 'xlsx';
 
 export function readXL(file: File): Promise<Room[]> {
     const toDateObj = (str: string) => {
         const [y, d, m] = str.split('-').map(s => Number(s));
         // TODO: check here if invalid date
-        return new Date(y, m - 1, d, 12, 30);
+        return new Date(y, m - 1, d, 12, 30).getTime();
     }
 
     const reader = new FileReader();
@@ -32,7 +32,8 @@ export function readXL(file: File): Promise<Room[]> {
                         return {
                             fromDate: toDateObj(fromStr),
                             toDate: toDateObj(toStr),   
-                            status, guestName, guestNickName
+                            status, guestName, guestNickName,
+                            roomName, roomType
                         };
                     })
                 } as Room;
@@ -90,3 +91,8 @@ export const genSimplifiedTime = (date: number, showTime = true) => {
         return `${h} Hour${h > 1 ? 's' : ''} Ago`;
     } else return getDate(dt);
 }
+
+export const strFromRes = (re: Reservation, showTime?: boolean) =>
+    (re.status === "0" ? 'Closed' : `${re.guestName ?? ''}${re.guestNickName ? ` (${re.guestNickName})` : ''}`)
+    +
+    (showTime ? ` | From: ${new Date(re.fromDate).toLocaleDateString()} | To: ${new Date(re.toDate).toLocaleDateString()}` : '');

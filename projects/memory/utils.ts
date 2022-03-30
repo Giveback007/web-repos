@@ -25,26 +25,6 @@ export class Memory {
     ) { }
 };
 
-// /** Generate html from a string */
-// export const makeHTML = (html) =>
-//     new DOMParser().parseFromString(html, "text/html").body.childNodes;
-
-// /** Replace the inner contents of parent node */
-// export const replaceHTML = (parent, html) =>
-//     parent.replaceChildren(...makeHTML(html));
-
-// /** Append to parent node */
-// export const addHTML = (parent, html) => 
-//     parent.append(...makeHTML(html));
-
-
-// export const elm = (id) => {
-//     const el = document.getElementById(id);
-//     if (!el) console.error('!el:', { id });
-    
-//     return el;
-// }
-
 // ------------------------ //
 const strMin = (str: string | number, len: number, char = '0') =>
     (arrGen(len, char).join() + str).slice(-len);

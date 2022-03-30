@@ -5,7 +5,7 @@ const dtStart = new Date();
 export const set = {
     dtStart,
     eventColorMap: ['red', 'yellow', 'orange', 'green'],
-    nowYM: { y: dtStart.getFullYear(), m: dtStart.getMonth() },
+    nowYM: { y: dtStart.getFullYear(), m: dtStart.getMonth(), d: dtStart.getDate() },
 }
 
 export type State = {

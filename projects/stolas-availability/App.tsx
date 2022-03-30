@@ -1,15 +1,16 @@
-
-import { arrGen, minAppend, equal } from '@giveback007/util-lib';
+import { minAppend } from '@giveback007/util-lib';
 import { NavDrawer, TopBar } from 'my-alyce-component-lib';
 import { Button } from "my-alyce-component-lib";
 import React, { Component, createRef } from "react";
+import { AcctView } from './AccountingView';
+import { CalendarView } from './CalendarView';
+import { ScrollView } from './ScrollView';
 import { link, set, State, store } from "./store";
 import { genSimplifiedTime, readXL } from "./utils";
-import { Calendar as CalendarLib } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
 
 type S = {
     navOpen: boolean;
+    tab: 'scroll' | 'calendar' | 'accounting';
 }
 
 export const App = link(s => s,
@@ -18,7 +19,8 @@ export const App = link(s => s,
 // ]
 class extends Component<State, S> {
     state: S = {
-        navOpen: !!store.getState().rooms.length
+        navOpen: false, // !!store.getState().rooms.length,
+        tab: 'accounting',
     }
 
     fileUpldRef = createRef<HTMLInputElement>();
@@ -42,18 +44,27 @@ class extends Component<State, S> {
                 className='top-bar'
                 menuIsExpanded={s.navOpen}
                 onMenuExpand={() => this.setState({ navOpen: !s.navOpen })}
-                leftNavItems={[{
-                    children: <Button>◄</Button>,
-                    onClick: () => store.setState({ selectedMonth: selectedMonth - 1 }),
+                leftNavItems={rooms.length ? [{
+                    children: <Button
+                        type='primary'
+                        outline={s.tab !== 'scroll'}
+                    >Mth</Button>,
+                    onClick: () => this.setState({ tab: 'scroll' })
                 }, {
-                    children: <h1>{minAppend(m.getMonth() + 1, 2)}/{m.getFullYear()}</h1>,
-                    onClick: () => {}
+                    children: <Button
+                        type='primary'
+                        outline={s.tab !== 'calendar'}
+                    >Cal</Button>,
+                    onClick: () => this.setState({ tab: 'calendar' })
                 }, {
-                    children: <Button>►</Button>,
-                    onClick: () => store.setState({ selectedMonth: selectedMonth + 1 })
-                }]}
+                    children: <Button
+                        type='primary'
+                        outline={s.tab !== 'accounting'}
+                    >Act</Button>,
+                    onClick: () => this.setState({ tab: 'accounting' })
+                }] : []}
                 rightNavItems={[{
-                    children: <Button size='lg' className='upload-btn'>Upload XL</Button>,
+                    children: <Button size='lg' className='upload-btn'>Add XL</Button>,
                     onClick: () => {
                         this.fileUpldRef.current?.click();
                         const sub = store.stateSub('rooms', ({ rooms }) => {
@@ -65,12 +76,21 @@ class extends Component<State, S> {
                     },
                 }]}
                 centerContent={<div className='center-content'>
-                    <h1 className='xl-time'>{p.uploadTime ?
+                    {/* <h1 className='xl-time'>{p.uploadTime ?
                         `XL Added ${genSimplifiedTime(p.uploadTime)}`
                         :
                         'No Data, Please Upload XL'
-                    }</h1>
-                    {selectedRoom && <h1 style={{ fontWeight: 'bold' }}>{selectedRoom}</h1>}
+                    }</h1> */}
+                    {/* <Button type='primary' size='auto' onClick={() => this.setState({ navOpen: true })}>Select Room</Button> */}
+                    <Button
+                        type='info'
+                        size='lg'
+                        onClick={() => this.setState({ navOpen: true })}
+                        // style={{ fontSize: 'large' }}
+                    >
+                        {selectedRoom ? `Rm: ${selectedRoom}` : 'Select Room'}
+                    </Button>
+                    {/* {selectedRoom ? <h1 style={{ fontWeight: 'bold' }}>{selectedRoom}</h1>} */}
                 </div>}
             />
             <NavDrawer
@@ -84,6 +104,45 @@ class extends Component<State, S> {
                 isOpen={s.navOpen}
                 onBackdropClick={() => this.setState({ navOpen: false })}
             />
+
+
+
+            {rooms.length ? <>
+                <div id="month-selector">
+                    <Button
+                        shape='flat'
+                        onClick={() => store.setState({ selectedMonth: selectedMonth - 1 })}
+                    >◄</Button>
+                    <input
+                        type="month"
+                        value={`${m.getFullYear()}-${minAppend(m.getMonth() + 1, 2)}`}
+                        onChange={(e) => {
+                            const [y, _m] = e.target.value.split('-').map(s => Number(s));
+                            const selectedMonth = (y * 12 + _m - 1) - (set.nowYM.y * 12 + set.nowYM.m);
+                            
+                            store.setState({ selectedMonth });
+                        }}
+                    />
+                    {/* <h1>{minAppend(m.getMonth() + 1, 2)}/{m.getFullYear()}</h1> */}
+                    <Button
+                        shape='flat'
+                        onClick={() => store.setState({ selectedMonth: selectedMonth + 1 })}
+                    >►</Button>
+                </div>
+
+                {s.tab === 'calendar' && (selectedRoom ?
+                    <CalendarView {...{selectedMonth}} />
+                    :
+                    <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Please Select A Room</h1>)
+                }
+
+                {s.tab === 'scroll' && <ScrollView />}
+
+                {s.tab === 'accounting' && <AcctView />}
+            </> : <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Please Add XL Data</h1>}
+            
+            <div style={{height: 45, width: '100%'}}/>
+
             <input
                 type="file"
                 hidden
@@ -96,90 +155,7 @@ class extends Component<State, S> {
                     store.setState({ rooms, uploadTime: Date.now(), selectedRoom: null });
                 }}
             />
-            {selectedRoom ? <CalendarView {...{selectedMonth}} /> : <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>{
-                rooms.length ? 'Please Select A Room' : 'Please Add XL Data'
-            }</h1>}
         </>;
     }
 });
 
-class CalendarView extends Component<{ selectedMonth: number }> {
-    state = { nCalendars: arrGen<null>(6, null) }
-
-    render() {
-        return <div className='calnedar-container'>
-            {this.state.nCalendars.map((_, i) => <Calendar i={i} />)}
-        </div>;
-    }
-}
-
-const Calendar = class extends Component<{
-    i: number;
-}> {
-    calRef = createRef<HTMLDivElement>();
-    cal: CalendarLib | null = null;
-
-    sub: { unsubscribe: () => boolean; } | null = null;
-
-    componentDidMount() {
-        this.sub = store.stateSub([
-            'roomDict', 'selectedMonth', 'selectedRoom'
-        ], (s, prev) => {
-            const room = s.roomDict[s.selectedRoom || ''];
-            if (!room || !this.calRef.current) return;
-    
-            if (!this.cal) {
-                this.cal = new CalendarLib(this.calRef.current, {
-                    plugins: [ dayGridPlugin ], // timeGridPlugin, listPlugin 
-                    initialView: 'dayGridMonth',
-                    headerToolbar: {
-                    left: null as any,
-                    center: 'title',
-                    right: null as any,
-                    },
-                    fixedWeekCount: false,
-                    showNonCurrentDates: false,
-                    contentHeight: 'auto',
-                    titleFormat: { year: 'numeric', month: '2-digit' },
-                });
-    
-                this.cal.render();
-            }
-    
-            const m = this.props.i + s.selectedMonth;
-            const dtM = new Date(set.nowYM.y, set.nowYM.m + m);
-            const { reservations } = room;
-    
-            if (s.selectedMonth !== prev?.selectedMonth) {
-                this.cal.gotoDate(dtM);
-            }
-    
-            if (s.selectedRoom !== prev?.selectedRoom || !equal(s.roomDict, prev.roomDict)) {
-                this.cal.gotoDate(dtM);
-                this.cal.removeAllEvents();
-                reservations.forEach((re) => {
-                    const start = new Date(re.fromDate), end = new Date(re.toDate);
-                    
-                    // const start = `${fDt.getFullYear()}-${minAppend(fDt.getMonth() + 1, 2)}-${minAppend(fDt.getDate(), 2)}`;
-                    // const end = `${tDt.getFullYear()}-${minAppend(tDt.getMonth() + 1, 2)}-${minAppend(tDt.getDate(), 2)}`;
-                    
-                    const title = re.status === "0" ?
-                    'Closed'
-                    :
-                    `${re.guestName ?? ''}${re.guestNickName ? ` (${re.guestNickName})` : ''}`;
-
-                    this.cal?.addEvent({
-                        title, start, end, textColor: 'black',
-                        color: set.eventColorMap[re.status],
-                    });
-                });
-            }
-        }, true);
-    }
-
-    componentWillUnmount = () =>
-        this.sub && this.sub.unsubscribe();
-
-    render = () =>
-        <div ref={this.calRef} className="calnedar-inner-container" />;
-};

@@ -967,10 +967,10 @@
   dependencies:
     tslib "~2.0.3"
 
-"@giveback007/util-lib@^0.25.3":
-  version "0.25.3"
-  resolved "https://registry.yarnpkg.com/@giveback007/util-lib/-/util-lib-0.25.3.tgz#57f2e7f390ebbd18e082dd76121a784a1a8d64ea"
-  integrity sha512-fNUVgD4bPGuKXcgPM1vZMKvvF3cHzAIf6OEaaTrbjknp/3Ws4rnwz/3h0KTsGMz+6j48vXz5HlGv94k+56AVNg==
+"@giveback007/util-lib@^0.25.4":
+  version "0.25.4"
+  resolved "https://registry.yarnpkg.com/@giveback007/util-lib/-/util-lib-0.25.4.tgz#748e5cc9d03e5a79dabf4772d0f82d88ec165d90"
+  integrity sha512-iXleLz5ci+hi4BPmKyBbrIh/JPgXAtggm7Bl845g/B+pz1fKCq9VJxN5UgThdYDmYgkYe5wjSQTtwJeFczwINA==
   dependencies:
     tslib "~2.0.3"
 
