@@ -1,16 +1,15 @@
-import { arrToDict, minAppend, objExtract, objKeyVals } from '@giveback007/util-lib';
-import { NavDrawer, NavItem, TopBar } from 'my-alyce-component-lib';
+import { minAppend, objExtract, objKeyVals } from '@giveback007/util-lib';
+import { NavDrawer, TopBar } from 'my-alyce-component-lib';
 import { Button } from "my-alyce-component-lib";
 import React, { Component, createRef } from "react";
 import { AcctView } from './AccountingView';
-import { CalendarView } from './CalendarView';
 import { ScrollView } from './ScrollView';
 import { link, set, State, store } from "./store";
 import { readXL } from "./utils";
 
 type S = {
     navOpen: boolean;
-    tab: 'scroll' | 'calendar' | 'accounting';
+    tab: 'scroll' | 'accounting';
 }
 
 export const App = link(s => objExtract(s, ['selectedMonth', 'selectedRoom', 'rooms', 'roomTypes']),
@@ -52,6 +51,7 @@ class extends Component<Pick<State, 'selectedMonth' | 'selectedRoom' | 'rooms' |
             <TopBar
                 addSpacer
                 fixed
+                style={{maxWidth: '100vw'}}
                 className='top-bar'
                 menuIsExpanded={navOpen}
                 onMenuExpand={() => this.setState({ navOpen: !navOpen })}
@@ -59,19 +59,21 @@ class extends Component<Pick<State, 'selectedMonth' | 'selectedRoom' | 'rooms' |
                     children: <Button
                         type='primary'
                         outline={tab !== 'scroll'}
-                    >Mth</Button>,
+                    >Mnth</Button>,
                     onClick: () => this.setState({ tab: 'scroll' })
-                }, {
-                    children: <Button
-                        type='primary'
-                        outline={tab !== 'calendar'}
-                    >Cal</Button>,
-                    onClick: () => this.setState({ tab: 'calendar' })
-                }, {
+                },
+                // {
+                //     children: <Button
+                //         type='primary'
+                //         outline={tab !== 'calendar'}
+                //     >Cal</Button>,
+                //     onClick: () => this.setState({ tab: 'calendar' })
+                // }, 
+                {
                     children: <Button
                         type='primary'
                         outline={tab !== 'accounting'}
-                    >Act</Button>,
+                    >Acct</Button>,
                     onClick: () => this.setState({ tab: 'accounting' })
                 }] : []}
                 rightNavItems={[{
@@ -137,7 +139,7 @@ class extends Component<Pick<State, 'selectedMonth' | 'selectedRoom' | 'rooms' |
                     >►</Button>
                 </div>
 
-                {tab === 'calendar' && <CalendarView {...{selectedMonth, selectedRoom}} />}
+                {/* {tab === 'calendar' && <CalendarView {...{selectedMonth, selectedRoom}} />} */}
                 {tab === 'scroll' && <ScrollView />}
                 {tab === 'accounting' && <AcctView />}
 

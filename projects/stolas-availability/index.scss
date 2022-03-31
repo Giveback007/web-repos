@@ -77,9 +77,9 @@
 // #root > nav > ul:nth-child(1) > li:nth-child(3) > 
 
 #month-selector {
-    display: flex;
     position: fixed;
     bottom: 0;
+    display: flex;
     width: 100%;
     background: white;
     z-index: 1000;

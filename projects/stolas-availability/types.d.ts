@@ -6,16 +6,23 @@ type Reservation = {
     /** check out date */
     toDate: number;
     /**
-     * 0: closed
-     * 1: // yellow
-     * 2: // orange
-     * 3: paid
+     * 0: [red]     closed
+     * 
+     * 1: [yellow]  tentative ("verbally committed but hasn't actually committed")
+     * 
+     * 2: [orange]  pending ("already committed but hasn't paid")
+     * 
+     * 3: [green]   paid
      */
     status: '0' | '1' | '2' | '3';
     guestName?: string;
     guestNickName?: string;
     /** total amount of days in reservation */
     days: number;
+    /** XL row number key */
+    row: string;
+    /** XL col character key */
+    col: string;
 }
 
 type Room = {
@@ -23,3 +30,8 @@ type Room = {
     roomName: string;
     reservations: Reservation[];
 }
+
+// 0 - closed
+// 1 - tentative ("verbally committed but hasn't actually committed")
+// 2 - pending ("already committed but hasn't paid")
+// 3 - paid

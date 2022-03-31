@@ -1,4 +1,4 @@
-import { days, hours, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
+import { clone, days, hours, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
 import { read, utils } from 'xlsx';
 
 /** Returns a tuple with `[Room[], RoomTypeDict]` */
@@ -15,12 +15,23 @@ export function readXL(file: File): Promise<Room[]> {
         reader.onload = (e) => {
             const result = e.target?.result;
             if (!result) return
+
             const { SheetNames, Sheets } = read(result, { type: 'binary' });
             const data = SheetNames.map(name => {
-                const x: string[][] = utils.sheet_to_json(Sheets[name], { header: 1 });
-                x.shift();
+                
+                const x: string[][] = utils.sheet_to_json(Sheets[name], { header: 1, blankrows: true, defval: '' });
+                const y = x.map((row, rI) => row.map((col, cI) => {
+                    if (cI < 2 || !col) return String(col);
 
-                return x;
+                    const r = rI + 1;
+                    const c = cI;
+
+                    return `${numXLCol(c)} | ${r} | ${col}`;
+                }).filter(x => x)).filter(arr => arr.length);
+                
+                y.shift();
+                console.log(y)
+                return y;
             });
 
             
@@ -31,13 +42,13 @@ export function readXL(file: File): Promise<Room[]> {
                     roomType,
                     roomName,
                     reservations: reservationsStrings.map(s => s && s.trim()).filter(s => s).map((str) => {
-                        const [fromStr, toStr, status, guestName, guestNickName] = str.split('|').map(s => s.trim());
+                        const [col, row, fromStr, toStr, status, guestName, guestNickName] = str.split('|').map(s => s.trim());
                         const fromDate = getTime(fromStr);
                         const toDate = getTime(toStr);
 
                         return {
                             fromDate, toDate, status, guestName,
-                            guestNickName, roomName, roomType,
+                            guestNickName, roomName, roomType, row, col,
                             days: Math.round((toDate - fromDate) / days(1)),
                         };
                     }).sort((a, b) => a.fromDate - b.fromDate)
@@ -46,6 +57,7 @@ export function readXL(file: File): Promise<Room[]> {
                 return room;
             }));
 
+            console.log(roomArr.flat())
             res(roomArr.flat());
         }
         
@@ -137,8 +149,21 @@ export function getRoomTypeColor(roomType: string) {
         deluxe: '#32a8a4',
         quality: '#32a836',
         standard: '#a8a632',
-    }
+    };
 
     return typesToColor[roomType] ? typesToColor[roomType] : stringToColor(roomType);
 
+}
+
+/** Take the column index (start from 0) and turn into XL format column-key  */
+export function numXLCol(num: number) {
+    let s = '', t: number, n = num + 1;
+  
+    while (n > 0) {
+      t = (n - 1) % 26;
+      s = String.fromCharCode(65 + t) + s;
+      n = (n - t) / 26 | 0;
+    }
+
+    return s;
 }

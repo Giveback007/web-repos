@@ -5,19 +5,19 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import { set, store } from "./store";
 import { strFromRes } from "./utils";
 
-export class CalendarView extends Component<{ selectedMonth: number; selectedRoom: string | null }> {
-    state = { nCalendars: arrGen<null>(6, null) }
+export class CalendarView extends Component<{ selectedRoom: string }> {
+    state = { nCalendars: arrGen<null>(12, null) }
 
     render = () => this.props.selectedRoom ?
         <div className='calendar-container'>
-            {this.state.nCalendars.map((_, i) => <Calendar i={i} />)}
+            {this.state.nCalendars.map((_, i) => <Calendar selectedRoom={this.props.selectedRoom} i={i} />)}
         </div>
         :
         <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Please Select A Room</h1>;
 }
 
 const Calendar = class extends Component<{
-    i: number;
+    i: number; selectedRoom: string;
 }, {
     // selectedRoom: string | null
 }> {
@@ -33,11 +33,12 @@ const Calendar = class extends Component<{
     firstRender = true;
     componentDidMount() {
         this.sub = store.stateSub([
-            'roomDict', 'selectedMonth', 'selectedRoom'
+            'roomDict', 'selectedMonth'
         ], (s, prev) => {
-            if (!s.roomDict || !s.selectedRoom || !this.calRef.current) return;
+            if (!s.roomDict || !this.calRef.current) return;
 
-            const room = s.roomDict[s.selectedRoom];
+            const {selectedRoom} = this.props;
+            const room = s.roomDict[selectedRoom];
     
             if (!this.cal) {
                 this.cal = new CalendarLib(this.calRef.current, {

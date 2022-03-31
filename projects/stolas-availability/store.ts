@@ -2,6 +2,11 @@ import { StateManager, stateManagerReactLinker } from "@giveback007/browser-util
 import { arrToDict, Dict, objKeys } from "@giveback007/util-lib";
 const dtStart = new Date();
 
+// 0 - closed
+// 1 - tentative ("verbally committed but hasn't actually committed")
+// 2 - pending ("already committed but hasn't paid")
+// 3 - paid
+
 export const set = {
     dtStart,
     eventColorMap: ['#fa0223', '#f5e905', '#fa9b02', '#13bd3d'],

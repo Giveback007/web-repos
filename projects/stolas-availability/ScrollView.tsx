@@ -1,6 +1,7 @@
-import { arrGen, arrLast, days, Dict, hrs, minAppend, monthStartEnd, objExtract } from "@giveback007/util-lib";
+import { arrGen, arrLast, days, Dict, hrs, monthStartEnd, objExtract } from "@giveback007/util-lib";
 import { Modal } from "my-alyce-component-lib";
 import React, { Component, CSSProperties } from "react";
+import { CalendarView } from "./CalendarView";
 import { link, set, store } from "./store";
 import { getRoomTypeColor, strFromRes } from "./utils";
 
@@ -48,6 +49,7 @@ type S = {
     daysArr: number[];
     renderDict?: Dict<(RenderReservation | RenderFill)[]>;
     modal: null | RenderReservation;
+    calModal: null | Room;
     selectedMonth: number;
 }
 
@@ -57,7 +59,7 @@ type P = {
 }
 
 export const ScrollView = link(s => objExtract(s, ['rooms', 'selectedRoom']), class extends Component<P, S> {
-    state = { daysArr: [], modal: null, selectedMonth: 0 } as S;
+    state = { daysArr: [], modal: null, selectedMonth: 0, calModal: null } as S;
 
     sub: { unsubscribe: () => boolean; } | null = null;
     componentWillUnmount = () => this.sub && this.sub.unsubscribe();
@@ -160,7 +162,7 @@ export const ScrollView = link(s => objExtract(s, ['rooms', 'selectedRoom']), cl
     }
 
     render() {
-        const { daysArr, renderDict, modal, selectedMonth } = this.state;
+        const { daysArr, renderDict, modal, selectedMonth, calModal } = this.state;
         const { rooms, selectedRoom } = this.props;
         const nowDay = !selectedMonth && set.nowYM.d;
         
@@ -176,6 +178,18 @@ export const ScrollView = link(s => objExtract(s, ['rooms', 'selectedRoom']), cl
                 <h1>{modal.status !== '0' ? 'Guest:' : 'Room'} {strFromRes(modal)}</h1>
                 <h1>From: {new Date(modal.fromDate).toLocaleDateString()}</h1>
                 <h1>To: {new Date(modal.toDate).toLocaleDateString()}</h1>
+                <br />
+                <h1>XL Location: {modal.col}{modal.row}</h1>
+            </Modal>}
+
+            {calModal && <Modal
+                header={`${calModal.roomType}: ${calModal.roomName}`}
+                onClose={() => this.setState({ calModal: null })}
+                onBackdropClick={() => this.setState({ calModal: null })}
+                style={{overflow: 'auto', maxHeight: '88vh', maxWidth: '97vw'}}
+                zIndex={1001}
+            >
+                <CalendarView selectedRoom={calModal.roomName} />
             </Modal>}
 
             {/* DATES (top row) */}
@@ -184,7 +198,7 @@ export const ScrollView = link(s => objExtract(s, ['rooms', 'selectedRoom']), cl
                 flexDirection: 'row',
                 position: 'sticky',
                 top: 75,
-                zIndex: 999,
+                zIndex: 997,
                 fontSize: 35,
             }}>
                 <div style={{...datesBox, background: 'white', minWidth: firstCol}}/>
@@ -194,31 +208,14 @@ export const ScrollView = link(s => objExtract(s, ['rooms', 'selectedRoom']), cl
             {/* ROOMS */}
             <div style={{position: 'relative'}}>
                 {/* Under Grid */}
-                {rooms.map(({ roomName, roomType }) => {
+                {rooms.map(({ roomName }) => {
                     const style = roomName === selectedRoom ? selRowStyle : boxStyle;
 
                     return <div style={{
                         display: 'flex',
                         flexDirection: 'row',
                     }}>
-                        <div
-                            style={{
-                                ...style,
-                                borderRight: 'solid 1px black',
-                                fontSize: 20,
-                                position: 'sticky',
-                                left: 0,
-                                zIndex: 998,
-                                fontWeight: 700,
-                                // background: 'white',
-                                background: getRoomTypeColor(roomType),
-                                minWidth: firstCol,
-                                justifyContent: 'start',
-                                paddingLeft: '10px'
-                            }}
-                            title={`${roomType}: ${roomName}`}
-                        >{`${roomName} | ${roomType.substring(0, 3)}`}</div>
-
+                        <div style={{...style, minWidth: firstCol}}/>
                         {daysArr.map((d) => <div style={{
                             ...style,
                             ...nowDay === d && selColStyle,
@@ -231,14 +228,37 @@ export const ScrollView = link(s => objExtract(s, ['rooms', 'selectedRoom']), cl
                 {renderDict && <div
                     style={{ position:'absolute', top: 0, left: 0, }}
                 >
-                    {rooms.map(({ roomName }) => {
+                    {rooms.map((rm) => {
+                        const { roomName, roomType } = rm;
                         const style = roomName === selectedRoom ? selRowStyle : boxStyle;
 
                         return <div style={{
                             display: 'flex',
                             flexDirection: 'row',
                         }}>
-                            <div style={{...style, minWidth: firstCol}}/>
+                            {/* <div style={{...style, minWidth: firstCol}}/> */}
+                            <div
+                                onClick={() => {
+                                    // store.setState({ selectedRoom: rm.roomName })
+                                    this.setState({ calModal: rm });
+                                }}
+                                style={{
+                                    ...style,
+                                    borderRight: 'solid 1px black',
+                                    fontSize: 20,
+                                    position: 'sticky',
+                                    left: 0,
+                                    zIndex: 996,
+                                    fontWeight: 700,
+                                    // background: 'white',
+                                    background: getRoomTypeColor(roomType),
+                                    minWidth: firstCol,
+                                    justifyContent: 'start',
+                                    paddingLeft: '10px',
+                                    cursor: 'pointer'
+                                }}
+                                title={`${roomType}: ${roomName}`}
+                            >{`${roomName} | ${roomType.substring(0, 3)}`}</div>
                             {renderDict[roomName].map(x => {
                                 const isRes = x.status !== null;
                                 const text = isRes ? strFromRes(x, true) : null;
