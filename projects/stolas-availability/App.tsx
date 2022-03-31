@@ -1,26 +1,23 @@
-import { minAppend } from '@giveback007/util-lib';
-import { NavDrawer, TopBar } from 'my-alyce-component-lib';
+import { arrToDict, minAppend, objExtract, objKeyVals } from '@giveback007/util-lib';
+import { NavDrawer, NavItem, TopBar } from 'my-alyce-component-lib';
 import { Button } from "my-alyce-component-lib";
 import React, { Component, createRef } from "react";
 import { AcctView } from './AccountingView';
 import { CalendarView } from './CalendarView';
 import { ScrollView } from './ScrollView';
 import { link, set, State, store } from "./store";
-import { genSimplifiedTime, readXL } from "./utils";
+import { readXL } from "./utils";
 
 type S = {
     navOpen: boolean;
     tab: 'scroll' | 'calendar' | 'accounting';
 }
 
-export const App = link(s => s,
-//     objExtract(s, [
-//     'rooms', 'uploadTime', 'selectedRoom', 'nowDate'
-// ]
-class extends Component<State, S> {
+export const App = link(s => objExtract(s, ['selectedMonth', 'selectedRoom', 'rooms', 'roomTypes']),
+class extends Component<Pick<State, 'selectedMonth' | 'selectedRoom' | 'rooms' | 'roomTypes'>, S> {
     state: S = {
         navOpen: false, // !!store.getState().rooms.length,
-        tab: 'accounting',
+        tab: 'scroll',
     }
 
     fileUpldRef = createRef<HTMLInputElement>();
@@ -31,35 +28,49 @@ class extends Component<State, S> {
     }
 
     render() {
-        const p = this.props;
-        const s = this.state;
-        const { selectedMonth, selectedRoom, rooms } = p;
+        const { selectedMonth, selectedRoom, rooms, roomTypes } = this.props;
+        const { navOpen, tab } = this.state;
         
         const m = new Date(set.nowYM.y, set.nowYM.m + selectedMonth, 1);
+
+        const navItems: any[] = [];
+        if (roomTypes) objKeyVals(roomTypes).map(({key, val}, i) => {
+            if (i) navItems.push({type: 'break'});
+
+            navItems.push(
+                {type: 'section', title: key },
+                ...val.map(r => ({
+                    type: 'action',
+                    title: r.roomName + '',
+                    onClick: () => this.handleRoomClick(r),
+                    isActive: r.roomName === selectedRoom
+                }))
+            );
+        })
 
         return <>
             <TopBar
                 addSpacer
                 fixed
                 className='top-bar'
-                menuIsExpanded={s.navOpen}
-                onMenuExpand={() => this.setState({ navOpen: !s.navOpen })}
+                menuIsExpanded={navOpen}
+                onMenuExpand={() => this.setState({ navOpen: !navOpen })}
                 leftNavItems={rooms.length ? [{
                     children: <Button
                         type='primary'
-                        outline={s.tab !== 'scroll'}
+                        outline={tab !== 'scroll'}
                     >Mth</Button>,
                     onClick: () => this.setState({ tab: 'scroll' })
                 }, {
                     children: <Button
                         type='primary'
-                        outline={s.tab !== 'calendar'}
+                        outline={tab !== 'calendar'}
                     >Cal</Button>,
                     onClick: () => this.setState({ tab: 'calendar' })
                 }, {
                     children: <Button
                         type='primary'
-                        outline={s.tab !== 'accounting'}
+                        outline={tab !== 'accounting'}
                     >Act</Button>,
                     onClick: () => this.setState({ tab: 'accounting' })
                 }] : []}
@@ -93,19 +104,15 @@ class extends Component<State, S> {
                     {/* {selectedRoom ? <h1 style={{ fontWeight: 'bold' }}>{selectedRoom}</h1>} */}
                 </div>}
             />
+
             <NavDrawer
                 className='nav-drawer'
                 fixed={'left'}
-                menuItems={p.rooms.map(r => ({
-                    type: 'action',
-                    title: r.roomName + '',
-                    onClick: () => this.handleRoomClick(r),
-                }))}
-                isOpen={s.navOpen}
+                brand="Stolas Rooms"
+                menuItems={navItems}
+                isOpen={navOpen}
                 onBackdropClick={() => this.setState({ navOpen: false })}
             />
-
-
 
             {rooms.length ? <>
                 <div id="month-selector">
@@ -130,15 +137,10 @@ class extends Component<State, S> {
                     >►</Button>
                 </div>
 
-                {s.tab === 'calendar' && (selectedRoom ?
-                    <CalendarView {...{selectedMonth}} />
-                    :
-                    <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Please Select A Room</h1>)
-                }
+                {tab === 'calendar' && <CalendarView {...{selectedMonth, selectedRoom}} />}
+                {tab === 'scroll' && <ScrollView />}
+                {tab === 'accounting' && <AcctView />}
 
-                {s.tab === 'scroll' && <ScrollView />}
-
-                {s.tab === 'accounting' && <AcctView />}
             </> : <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Please Add XL Data</h1>}
             
             <div style={{height: 45, width: '100%'}}/>

@@ -5,19 +5,26 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import { set, store } from "./store";
 import { strFromRes } from "./utils";
 
-export class CalendarView extends Component<{ selectedMonth: number }> {
+export class CalendarView extends Component<{ selectedMonth: number; selectedRoom: string | null }> {
     state = { nCalendars: arrGen<null>(6, null) }
 
-    render() {
-        return <div className='calnedar-container'>
+    render = () => this.props.selectedRoom ?
+        <div className='calendar-container'>
             {this.state.nCalendars.map((_, i) => <Calendar i={i} />)}
-        </div>;
-    }
+        </div>
+        :
+        <h1 style={{fontSize: 'xx-large', textAlign: 'center'}}>Please Select A Room</h1>;
 }
 
 const Calendar = class extends Component<{
     i: number;
+}, {
+    // selectedRoom: string | null
 }> {
+    // state = {
+    //     selectedRoom: null,
+    // };
+
     calRef = createRef<HTMLDivElement>();
     cal: CalendarLib | null = null;
 
@@ -28,8 +35,9 @@ const Calendar = class extends Component<{
         this.sub = store.stateSub([
             'roomDict', 'selectedMonth', 'selectedRoom'
         ], (s, prev) => {
-            const room = s.roomDict[s.selectedRoom || ''];
-            if (!room || !this.calRef.current) return;
+            if (!s.roomDict || !s.selectedRoom || !this.calRef.current) return;
+
+            const room = s.roomDict[s.selectedRoom];
     
             if (!this.cal) {
                 this.cal = new CalendarLib(this.calRef.current, {
@@ -83,5 +91,5 @@ const Calendar = class extends Component<{
         this.sub && this.sub.unsubscribe();
 
     render = () =>
-        <div ref={this.calRef} className="calnedar-inner-container" />;
+        <div ref={this.calRef} className="calendar-inner-container" />;
 };

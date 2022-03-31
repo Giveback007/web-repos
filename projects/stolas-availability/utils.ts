@@ -1,8 +1,9 @@
-import { hours, isType, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
+import { days, hours, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
 import { read, utils } from 'xlsx';
 
+/** Returns a tuple with `[Room[], RoomTypeDict]` */
 export function readXL(file: File): Promise<Room[]> {
-    const toDateObj = (str: string) => {
+    const getTime = (str: string) => {
         const [y, d, m] = str.split('-').map(s => Number(s));
         // TODO: check here if invalid date
         return new Date(y, m - 1, d, 12, 30).getTime();
@@ -22,21 +23,27 @@ export function readXL(file: File): Promise<Room[]> {
                 return x;
             });
 
+            
             const roomArr = data.map(sheet => sheet.filter(a => a.length).map((roomArr) => {
                 const [roomType, roomName, ...reservationsStrings] = roomArr;
-                
-                return {
-                    roomType, roomName,
+
+                const room = {
+                    roomType,
+                    roomName,
                     reservations: reservationsStrings.map(s => s && s.trim()).filter(s => s).map((str) => {
                         const [fromStr, toStr, status, guestName, guestNickName] = str.split('|').map(s => s.trim());
+                        const fromDate = getTime(fromStr);
+                        const toDate = getTime(toStr);
+
                         return {
-                            fromDate: toDateObj(fromStr),
-                            toDate: toDateObj(toStr),   
-                            status, guestName, guestNickName,
-                            roomName, roomType
+                            fromDate, toDate, status, guestName,
+                            guestNickName, roomName, roomType,
+                            days: Math.round((toDate - fromDate) / days(1)),
                         };
-                    })
+                    }).sort((a, b) => a.fromDate - b.fromDate)
                 } as Room;
+
+                return room;
             }));
 
             res(roomArr.flat());
@@ -96,3 +103,42 @@ export const strFromRes = (re: Reservation, showTime?: boolean) =>
     (re.status === "0" ? 'Closed' : `${re.guestName ?? ''}${re.guestNickName ? ` (${re.guestNickName})` : ''}`)
     +
     (showTime ? ` | From: ${new Date(re.fromDate).toLocaleDateString()} | To: ${new Date(re.toDate).toLocaleDateString()}` : '');
+
+export function fillTimeGaps(arr: { start: number; end: number }[]) {
+    const fillers: typeof arr = [];
+    arr.forEach((x, i) => {
+        const next = arr[i + 1];
+        if (!next || x.end >= next.start) return;
+
+        fillers.push({ start: x.end, end: next.start });
+    });
+
+    return fillers;
+}
+
+export function stringToColor(str: string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++)
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).substr(-2);
+    }
+
+    return color;
+}
+
+export function getRoomTypeColor(roomType: string) {
+    roomType = roomType.toLocaleLowerCase();
+    const typesToColor = {
+        premium: '#324ea8',
+        deluxe: '#32a8a4',
+        quality: '#32a836',
+        standard: '#a8a632',
+    }
+
+    return typesToColor[roomType] ? typesToColor[roomType] : stringToColor(roomType);
+
+}
