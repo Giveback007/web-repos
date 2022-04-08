@@ -12,7 +12,6 @@ import { projects } from './projects';
     };
     opts.fromDir = 'projects/' + opts.fromDir
     opts.toDir = opts.toDir.replace('dist/', '.cache/');
-    // opts.env.envFile = path.join(__dirname, '../.env');
     
     return devBrowser(opts);
 })(process.argv.slice(2));

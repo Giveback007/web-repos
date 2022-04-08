@@ -15,8 +15,6 @@ setTimeout(async () => {
         copy('./manifest.webmanifest', './dist/manifest.webmanifest');
         copy('public', './dist/public');
 
-        console.log(`stuff: ${process.env.GOOGLE_CLIENT_ID}`)
-
         const promises = projects.map(opt => buildBrowser({
             ...opt,
             fromDir: 'projects/' + opt.fromDir,
