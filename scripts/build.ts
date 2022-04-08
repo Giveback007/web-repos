@@ -15,9 +15,11 @@ setTimeout(async () => {
         copy('./manifest.webmanifest', './dist/manifest.webmanifest');
         copy('public', './dist/public');
 
-        // const env = { envFile: '.env' },
-        console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID)
-        const promises = projects.map(opt => buildBrowser({ ...opt, fromDir: 'projects/' + opt.fromDir}));
+        const promises = projects.map(opt => buildBrowser({
+            ...opt,
+            fromDir: 'projects/' + opt.fromDir,
+            env: { define: { GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID} }
+        }));
         await Promise.all(promises);
 
     } else if (type === 'test') {
