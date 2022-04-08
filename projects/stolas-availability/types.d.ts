@@ -31,7 +31,15 @@ type Room = {
     reservations: Reservation[];
 }
 
-// 0 - closed
-// 1 - tentative ("verbally committed but hasn't actually committed")
-// 2 - pending ("already committed but hasn't paid")
-// 3 - paid
+type User = {
+    email: string;
+    name: string;
+    imgUrl: string;
+}
+
+// type GDriveFile = {
+//     kind: string;
+//     id: string;
+//     name: string;
+//     mimeType: string;
+// }

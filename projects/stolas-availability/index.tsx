@@ -4,6 +4,7 @@ import 'my-alyce-component-lib/dist/index.css';
 import React from 'react';
 import ReactDOM from "react-dom";
 import { App } from './App';
+import { store } from './store';
 
 // TODO
   // warn when there's an overlap
@@ -13,6 +14,6 @@ import { App } from './App';
 // -- BOOTSTRAP -- //
 ;(async function bootstrap() {
 
-    /** React App Render */
-    ReactDOM.render(<App />, document.getElementById("root"));
+  /** React App Render */
+  ReactDOM.render(<App />, document.getElementById("root"));
 })();

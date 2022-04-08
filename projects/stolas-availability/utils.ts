@@ -1,5 +1,7 @@
-import { clone, days, hours, min, minAppend, msToHrs, msToMin, msToSec } from '@giveback007/util-lib';
+import { clone, days, hours, min, minAppend, msToHrs, msToMin, msToSec, sec } from '@giveback007/util-lib';
 import { read, utils } from 'xlsx';
+import { GFile, GoogleApis } from './google-api';
+import { store } from './store';
 
 /** Returns a tuple with `[Room[], RoomTypeDict]` */
 export function readXL(file: File): Promise<Room[]> {
@@ -11,15 +13,25 @@ export function readXL(file: File): Promise<Room[]> {
 
     const reader = new FileReader();
 
-    return new Promise(res => {
+    return new Promise((res, rej) => {
         reader.onload = (e) => {
             const result = e.target?.result;
             if (!result) return
 
             const { SheetNames, Sheets } = read(result, { type: 'binary' });
+
             const data = SheetNames.map(name => {
                 
                 const x: string[][] = utils.sheet_to_json(Sheets[name], { header: 1, blankrows: true, defval: '' });
+                if (
+                    x[0][0].toLocaleLowerCase().trim() !== "room type"
+                    ||
+                    x[0][1].toLocaleLowerCase().trim() !== "room"
+                ) {
+                    rej();
+                    throw new Error('Sheet Is Incorrect Format');
+                }
+                
                 const y = x.map((row, rI) => row.map((col, cI) => {
                     if (cI < 2 || !col) return String(col);
 
@@ -30,7 +42,6 @@ export function readXL(file: File): Promise<Room[]> {
                 }).filter(x => x)).filter(arr => arr.length);
                 
                 y.shift();
-                console.log(y)
                 return y;
             });
 
@@ -57,7 +68,6 @@ export function readXL(file: File): Promise<Room[]> {
                 return room;
             }));
 
-            console.log(roomArr.flat())
             res(roomArr.flat());
         }
         
@@ -166,4 +176,25 @@ export function numXLCol(num: number) {
     }
 
     return s;
+}
+
+export async function getRoomsFromGSheets(id: string) {
+    let rooms: Room[] = [];
+
+    try {
+        const file = await new GoogleApis().downloadXL(id);
+        rooms = await readXL(file);
+    } catch {
+        store.setState({alert: {
+            type: 'danger',
+            title: 'XL In Incorrect Format',
+            text: "Couldn't Parse The Sheet",
+            timeoutMs: 7500,
+            onClose: () => store.setState({ alert: null }),
+            style: { position: 'fixed', top: 75, right: 5, zIndex: 1100 }
+        }})
+        return { isSuccess: false } as const
+    }
+
+    return { isSuccess: true, rooms } as const;
 }

@@ -3465,6 +3465,16 @@ my-alyce-component-lib@^0.1.26:
     react-hook-form "^7.26.1"
     tslib "~2.3.1"
 
+my-alyce-component-lib@^0.1.30:
+  version "0.1.30"
+  resolved "https://registry.yarnpkg.com/my-alyce-component-lib/-/my-alyce-component-lib-0.1.30.tgz#f7559290034ec6afad452c7dd084ebda5dcec699"
+  integrity sha512-1jI89BP3vBSJWOvfM/LowAUy8oXY66e3U8alUJHXZPqxE1QB09OZ9miDH2E3xImNIRoqmmPxE6KZYidJwxRBOw==
+  dependencies:
+    "@giveback007/util-lib" "^0.25.4"
+    classnames "^2.3.1"
+    react-hook-form "^7.26.1"
+    tslib "~2.3.1"
+
 nanoid@^3.2.0:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.1.tgz#6347a18cac88af88f58af0b3594b723d5e99bb35"

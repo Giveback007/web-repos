@@ -2,8 +2,8 @@ import React, { Component, createRef } from "react";
 import { arrGen, equal } from '@giveback007/util-lib';
 import { Calendar as CalendarLib } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import { set, store } from "./store";
-import { strFromRes } from "./utils";
+import { set, store } from "../store";
+import { strFromRes } from "../utils";
 
 export class CalendarView extends Component<{ selectedRoom: string }> {
     state = { nCalendars: arrGen<null>(12, null) }
@@ -45,9 +45,9 @@ const Calendar = class extends Component<{
                     plugins: [ dayGridPlugin ], // timeGridPlugin, listPlugin 
                     initialView: 'dayGridMonth',
                     headerToolbar: {
-                    left: null as any,
-                    center: 'title',
-                    right: null as any,
+                        left: null as any,
+                        center: 'title',
+                        right: null as any,
                     },
                     fixedWeekCount: false,
                     showNonCurrentDates: false,
@@ -72,13 +72,11 @@ const Calendar = class extends Component<{
                 reservations.forEach((re) => {
                     const start = new Date(re.fromDate), end = new Date(re.toDate);
                     
-                    // const start = `${fDt.getFullYear()}-${minAppend(fDt.getMonth() + 1, 2)}-${minAppend(fDt.getDate(), 2)}`;
-                    // const end = `${tDt.getFullYear()}-${minAppend(tDt.getMonth() + 1, 2)}-${minAppend(tDt.getDate(), 2)}`;
-                    
                     const title = strFromRes(re);
 
                     this.cal?.addEvent({
-                        title, start, end, textColor: 'black',
+                        title, start, end,
+                        textColor: 'black',
                         color: set.eventColorMap[re.status],
                     });
                 });

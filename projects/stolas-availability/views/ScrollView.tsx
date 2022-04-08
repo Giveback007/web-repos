@@ -2,8 +2,8 @@ import { arrGen, arrLast, days, Dict, hrs, monthStartEnd, objExtract } from "@gi
 import { Modal } from "my-alyce-component-lib";
 import React, { Component, CSSProperties } from "react";
 import { CalendarView } from "./CalendarView";
-import { link, set, store } from "./store";
-import { getRoomTypeColor, strFromRes } from "./utils";
+import { link, set, store } from "../store";
+import { getRoomTypeColor, strFromRes } from "../utils";
 
 const boxSize = 50;
 const firstCol = 115;

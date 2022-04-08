@@ -5,7 +5,9 @@
   "author": "Dovydas Stirpeika",
   "license": "MIT",
   "private": true,
-  "workspaces": ["projects/*"],
+  "workspaces": [
+    "projects/*"
+  ],
   "scripts": {
     "build": "yarn run-ts scripts/build && workbox generateSW workbox-config.js",
     "build:test": "yarn build && yarn run-ts scripts/build test",
@@ -19,5 +21,7 @@
     "build-dev": "^0.3.2",
     "concurrently": "^7.0.0",
     "workbox-cli": "^6.4.2"
+  },
+  "dependencies": {
   }
 }

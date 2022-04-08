@@ -6,9 +6,13 @@ import { projects } from './projects';
     const idx = projects.findIndex(x => x.fromDir.includes(type));
     if (idx === -1) throw new Error(`[type: ${type}] not found in [projects.ts]`);
     
-    const opts = {...projects[idx]};
+    const opts = {
+        ...projects[idx],
+        env: { envFile: '.env' },
+    };
     opts.fromDir = 'projects/' + opts.fromDir
     opts.toDir = opts.toDir.replace('dist/', '.cache/');
+    // opts.env.envFile = path.join(__dirname, '../.env');
     
     return devBrowser(opts);
 })(process.argv.slice(2));

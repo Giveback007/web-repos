@@ -1,5 +1,8 @@
 import { StateManager, stateManagerReactLinker } from "@giveback007/browser-utils/src";
-import { arrToDict, Dict, objKeys } from "@giveback007/util-lib";
+import { Dict, objKeys } from "@giveback007/util-lib";
+import type { AlertProps } from "my-alyce-component-lib";
+import { Action, AllActions } from "./actions";
+import { Auth } from "./auth";
 const dtStart = new Date();
 
 // 0 - closed
@@ -13,26 +16,34 @@ export const set = {
     nowYM: { y: dtStart.getFullYear(), m: dtStart.getMonth(), d: dtStart.getDate() },
 }
 
+export const auth = new Auth({ GOOGLE_CLIENT_ID });
+
 export type State = {
-    uploadTime: null | number;
     rooms: Room[];
     roomDict: Dict<Room> | null;
     selectedRoom: null | string;
     /** 0 is current month */
     selectedMonth: number;
     roomTypes: Dict<Room[]> | null;
+    user: User | null | 'loading';
+    isLoading: boolean;
+    googleSheetId: string | null;
+    alert: AlertProps | null;
 }
 
-export const store = new StateManager<State>({
-    uploadTime: null,
+export const store = new StateManager<State, AllActions>({
     selectedRoom: null,
     roomDict: null,
     selectedMonth: 0,
     rooms: [],
     roomTypes: null,
+    user: null,
+    isLoading: true,
+    googleSheetId: null,
+    alert: null,
 }, {
     id: 'Stolas-Availability-v5',
-    useKeys: ['rooms', 'uploadTime'],
+    useKeys: ['googleSheetId'],
 });
 
 export const link = stateManagerReactLinker(store);
@@ -50,12 +61,55 @@ store.stateSub('rooms', ({ rooms }) => {
     });
 
     objKeys(roomTypes).forEach(roomType => {
-        roomTypes[roomType] = roomTypes[roomType].sort((a, b) => {
-            if (a.roomName < b.roomName) return -1;
-            if (a.roomName > b.roomName) return 1;
-            return 0;
-        });
+        roomTypes[roomType] = roomTypes[roomType].sort((a, b) =>
+            a.roomName < b.roomName ? -1 : a.roomName > b.roomName ? 1 : 0);
     });
 
     store.setState({ roomDict, roomTypes });
 });
+
+store.actionSub([
+    Action.loginSuccess,
+    Action.logOut,
+], async (a) => {
+    switch (a.type) {
+        case 'LOGIN_SUCCESS':
+            const pr = (await auth.google).currentUser.get().getBasicProfile();
+            
+            return store.setState({
+                user: {
+                    email: pr.getEmail(),
+                    name: pr.getName(),
+                    imgUrl: pr.getImageUrl(),
+                },
+                alert: {
+                    type: 'info',
+                    title: 'Logged In',
+                    onClose: () => store.setState({ alert: null }),
+                    timeoutMs: 7500,
+                    style: { position: 'fixed', top: 75, right: 5, zIndex: 1100 }
+                }
+            });
+        case 'LOGOUT':
+            await auth.singOut('google');
+            return store.setState({
+                user: null,
+                googleSheetId: null,
+                rooms: [],
+                selectedMonth: 0,
+                selectedRoom: null,
+                alert: {
+                    type: 'info',
+                    title: 'Logged Out',
+                    onClose: () => store.setState({ alert: null }),
+                    timeoutMs: 7500,
+                    style: { position: 'fixed', top: 5, right: 5 }
+                }
+            });
+        default:
+            console.log(a);
+            throw new Error('Not Implemented');
+    }
+});
+
+// store.stateSub(true, s => console.log('alert', s.alert));

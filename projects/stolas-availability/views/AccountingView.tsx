@@ -1,7 +1,7 @@
 import { days, Dict, objExtract } from '@giveback007/util-lib';
 import React, { Component, CSSProperties } from 'react';
-import { link, set } from './store';
-import { fillTimeGaps, strFromRes } from './utils';
+import { link, set } from '../store';
+import { fillTimeGaps, strFromRes } from '../utils';
 
 const getBoxStyle = (height: number, status: Reservation['status'] | 'fill', highlight: boolean): CSSProperties => ({
   background: status === 'fill' ? 'transparent' : set.eventColorMap[status],
@@ -61,7 +61,6 @@ export const AcctView = link(s => objExtract(s, ['roomDict', 'selectedRoom']), c
       {renderArr.map((rs => {
         const t = set.dtStart.getTime();
         const highlight = t > rs.fromDate && t < rs.toDate;
-        console.log(t > rs.fromDate && t < rs.toDate, rs)
         const style = getBoxStyle(Math.ceil(rs.days / 7) * 20, rs.status, highlight);
 
         return rs.status === 'fill' ?
