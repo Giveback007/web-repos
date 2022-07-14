@@ -6,27 +6,27 @@ import { arrRmIdx, calcMem, Memory } from "./utils";
 /** const settings */
 export const set = {
     /** Minimum time for review */
-    minTime: sec(3),
+    minTime: 3500,
 
 
     // -- Score is the multiplier of timing on success -- //
     /** Minimum score */
     minScore: 1.1,
     /** Score divide on fail */
-    scoreDivide: 3,
+    scoreDivide: 2,
     /** Starting score for a memory */
     baseScore: 1.5,
 
 
     // -- Ease is the number added to the score on success -- //
     /** Starting ease for a memory */
-    baseEase: 0.3,
+    baseEase: 0.5,
     /** Minimum ease setting */
-    minEase: 0.05,
+    minEase: 0.1,
     /** Ease add on success */
-    easeAdd: 0.11,
+    easeAdd: 0.1,
     /** Ease subtract on fail */
-    easeSub: 0.35,
+    easeSub: 0.3,
 } as const;
 
 // -- STORE -- //
@@ -84,7 +84,8 @@ store.stateSub('memorize', s => {
 }, true);
 
 export function timeFromMem(memorize: Memory[]) {
-    const tNow = Date.now();
+    const dNow = new Date()
+    const tNow = dNow.getTime();
     
     const readyQnA: string[] = [];
     let nReadyIn5min =      0; const min5 = tNow + min(5);
@@ -103,7 +104,7 @@ export function timeFromMem(memorize: Memory[]) {
         if (!nextIncomingId) nextIncomingId = id;
         if (rw < min5) nReadyIn5min++;
 
-        if      (rw < dys1) nReadyToday++;
+        if (rw < dys1) nReadyToday++;
         if (rw < dys2) nReadyTomorrow++;
         if (rw < wks1) nReadyThisWeek++;
         else break;

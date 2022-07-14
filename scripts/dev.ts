@@ -2,7 +2,7 @@
 import { devBrowser } from 'build-dev';
 import { projects } from './projects';
 
-(function run([type]) {
+(function run(type: string) {
     const idx = projects.findIndex(x => x.fromDir.includes(type));
     if (idx === -1) throw new Error(`[type: ${type}] not found in [projects.ts]`);
     
@@ -14,4 +14,4 @@ import { projects } from './projects';
     opts.toDir = opts.toDir.replace('dist/', '.cache/');
     
     return devBrowser(opts);
-})(process.argv.slice(2));
+})(process.argv.slice(2)[0]);

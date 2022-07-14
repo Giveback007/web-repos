@@ -1,4 +1,4 @@
-import { arrGen, days, hours, min, msToDys, msToHrs, msToMin, msToSec, msToWks, uuid, weeks } from "@giveback007/util-lib";
+import { arrGen, days, dys, hours, hrs, min, msToDys, msToHrs, msToMin, msToSec, msToWks, uuid, weeks } from "@giveback007/util-lib";
 import { set } from "./store";
 
 
@@ -11,7 +11,7 @@ export class Memory {
     timing: number = set.minTime;
 
     /** Next time this word will be reviewed */
-    reviewOn: number = Date.now() + set.minTime;
+    reviewOn: number = Date.now() - 1000;
 
     /** Adds to score on success */
     ease: number = set.baseEase;
@@ -65,7 +65,7 @@ export const genSimplifiedTime = (ms: number, from: number = Date.now()) => {
     const dif = Math.floor(dt.getTime() - now.getTime());
 
     const getDate = (dt: Date) =>
-        dt.toLocaleDateString('us-en');
+        dt.toLocaleDateString();
     
     if (dif < 0) return getDate(dt);
 
@@ -83,7 +83,7 @@ export const genSimplifiedTime = (ms: number, from: number = Date.now()) => {
         return `${d} day${d > 1 ? 's' : ''}`;
     } else if (dif < weeks(52)) {
         const w = Math.round(msToWks(dif));
-        return `${w} weeks${w > 1 ? 's' : ''}`
+        return `${w} week${w > 1 ? 's' : ''}`
     }
     
     return getDate(dt);
@@ -99,13 +99,30 @@ export function calcMem(mem: Memory, success: boolean) {
     
     score = success ? score + ease : score / set.scoreDivide;
     if (score < set.minScore) score = set.minScore;
-
-    timing = success ? timing * score : set.minTime;
-    if (timing < set.minTime) timing = set.minTime;
-
-    const reviewOn = Math.floor(Date.now() + timing);
     
-    return { ...mem, score, timing, reviewOn, ease };
+    const oldTiming = timing;
+    timing = success ? timing * score + 1500 : set.minTime;
+
+    if (timing < set.minTime)
+        timing = set.minTime;
+    else if (timing > days(2))
+        timing = oldTiming * Math.min(score, 2);
+    else if (timing > hours(3))
+        timing = oldTiming * Math.min(score, 3);
+
+    const now = new Date();
+    let onDate = new Date(Date.now() + timing);
+
+    // if review is not today
+    if (timing > hours(1) && now.toDateString() !== onDate.toDateString()) {
+        // if date is on another date use 2am of that day
+        const y = onDate.getFullYear();
+        const m = onDate.getMonth();
+        const d = onDate.getDate();
+        onDate = new Date(y, m, d, 2)
+    }
+    
+    return { ...mem, score, timing, reviewOn: onDate.getTime(), ease };
 }
 
 export function arrRmIdx<T>(arr: T[], idx: number) {

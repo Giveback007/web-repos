@@ -1,4 +1,4 @@
-import { min, objKeys, msTimeObj } from "@giveback007/util-lib";
+import { min, objKeys, msTimeObj, days } from "@giveback007/util-lib";
 import { Button } from "my-alyce-component-lib";
 import React, { Component } from "react";
 import { learnNewWord, link, State } from "../store";
@@ -33,6 +33,21 @@ export const App = link(s => s, class extends Component<P, S> {
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
 
+        const { forReview, forLearn } = (() => {
+            const dict = memoryDict;
+            const obj = {
+                forReview:  [] as string[],
+                forLearn:   [] as string[],
+            }
+
+            readyQnA.sort((a, b) => dict[b].score - dict[a].score).forEach(id => {
+                const key = dict[id].timing > days(1) ? 'forReview' : 'forLearn';
+                obj[key].push(id)
+            });
+
+            return obj;
+        })();
+
         const nextWordTimer = (() => {
             if (!nextIncomingId) return null;
             let str = '...';
@@ -47,13 +62,13 @@ export const App = link(s => s, class extends Component<P, S> {
             }
 
             return <h1 style={{margin: '0 0.5rem', fontSize: '1.5rem'}}>
-                Word Incoming in: {str}
+                Next In: {str}
             </h1>
         })();
 
         const ready = readyQnA.length || false;
         const readyWords = ready && <h1 style={{margin: '0 0.5rem', fontSize: '1.5rem'}}>
-            {`${ready} Word${ready > 1 ? 's' : ''} Ready Now`}
+            {`${ready} Ready`}
         </h1>;
 
         return <div style={{maxWidth: 650, margin: 'auto', padding: '0 0.2rem'}}>
@@ -89,9 +104,9 @@ export const App = link(s => s, class extends Component<P, S> {
 
             <div style={{marginTop: '1rem'}}>
                 {([
-                    [nReadyThisWeek, 'This Week'],
-                    [nReadyTomorrow, 'Tomorrow'],
-                    [nReadyToday, 'Today'],
+                    // [nReadyThisWeek, 'This Week'],
+                    // [nReadyTomorrow, 'Tomorrow'],
+                    // [nReadyToday, 'Today'],
                     [nReadyIn5min, 'In < 5min'],
                 ] as const).map(([nReady, t]) => <WordsString {...{nReady, t}}/>) }
             </div>
@@ -107,18 +122,40 @@ export const App = link(s => s, class extends Component<P, S> {
                 >{memorize.length ? 'Skip Wait' : 'No Words Added'}</Button>}
             </div>
 
-            <br/>
+            <Button
+                size="auto"
+                type="primary"
+                disabled={!notIntroduced.length}
+                style={{marginTop: '0.5rem'}}
+                onClick={() => this.setState({ selectedId: learnNewWord() })}
+            >{notIntroduced.length ? 'Learn New Word' : 'No Words In Storage'}</Button>
+
+            {/* <br/> */}
             <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}>
-                <Button
-                    size="auto"
-                    type="primary"
-                    disabled={!notIntroduced.length}
-                    onClick={() => this.setState({ selectedId: learnNewWord() })}
-                >{notIntroduced.length ? 'Learn New Word' : 'No Words In Storage'}</Button>
+                
                 {!!readyQnA.length && <>
-                    <h1 style={{fontSize: '2rem', textAlign: 'center', marginBottom: '1rem'}}>READY WORDS:</h1>
+                    <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Review:</h1>
                     
-                    {readyQnA.map(id => {
+                    {forReview.map(id => {
+                        const { question } = memoryDict[id];
+                        return <Button
+                            style={{ margin: '0.2rem' }}
+                            shape="flat"
+                            size='xl'
+                            onClick={() => {
+                                this.setState({ modal: 'q-n-a', selectedId: id });
+                            }}
+                        >{question}</Button>
+                    })}
+
+                    {(forReview.length && forLearn.length) ? 
+                        <>
+                            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
+                            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Learn:</h1>
+                        </> : null
+                    }
+
+                    {forLearn.map(id => {
                         const { question } = memoryDict[id];
                         return <Button
                             style={{ margin: '0.2rem' }}
