@@ -2,9 +2,12 @@ import 'my-alyce-component-lib/dist/index.css';
 import React from 'react';
 import ReactDOM from "react-dom";
 import { min, sec } from '@giveback007/util-lib';
-import { store, timeFromMem } from './store';
+import { auth, store, timeFromMem } from './store';
 import { App } from './components/app';
 
+/* TODO:
+    1. Add [EDIT] Btn
+*/
 
 // -- BOOTSTRAP -- //
 ;(async function bootstrap() {

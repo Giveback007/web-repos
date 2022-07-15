@@ -1,7 +1,16 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { wks } from "@giveback007/util-lib";
+import { isType, wks } from "@giveback007/util-lib";
 import { arrToDict, Dict, dys, min, objVals, rand, sec } from "@giveback007/util-lib";
+import type { AlertProps } from "my-alyce-component-lib";
+import { Action } from "./actions";
+import { Auth } from "./auth";
 import { arrRmIdx, calcMem, Memory } from "./utils";
+
+type User = {
+    email: string;
+    name: string;
+    imgUrl: string;
+}
 
 /** const settings */
 export const set = {
@@ -31,11 +40,18 @@ export const set = {
 
 // -- STORE -- //
 export type State = {
+    isLoading: boolean;
+    user: User | null | 'loading';
+    alert: AlertProps | null;
+    
     /** List of memories not introduced yet */
     notIntroduced: Memory[];
 
     /** List of memories to pratice */
     memorize: Memory[];
+
+    /** List of deleted id's */
+    deleted: { id: string, date: number }[];
 
     /** On memorize array change create memoryDict  */
     memoryDict: Dict<Memory>;
@@ -56,8 +72,14 @@ export type State = {
 }
 
 export const store = new StateManager<State>({
+    isLoading: true,
+    user: null,
+    alert: null,
+
     notIntroduced: [],
     memorize: [],
+    deleted: [],
+
     memoryDict: {},
     readyQnA: [],
     nextIncomingId: null,
@@ -139,11 +161,16 @@ export function updateMem(id: string, success: boolean) {
 }
 
 export function deleteMem(id: string) {
-    const dict = {...store.getState().memoryDict};
+    const { memoryDict, deleted: del } = store.getState();
+    const dict = { ...memoryDict};
+
     delete dict[id];
 
+    const deleted = [...del];
+    deleted.push({ id, date: Date.now() })
+
     const memorize = objVals(dict);
-    store.setState({ memorize });
+    store.setState({ memorize, deleted });
 }
 
 export function importMems(mems: Memory[]) {
@@ -164,19 +191,64 @@ export function learnNewWord() {
 }
 
 /** Take a list of   */
-export function importWords(obj: {
+export function importWords(imp: {
     memorize: Memory[];
     notIntroduced: Memory[]
-}) {
+} | [string, string][]) {
+    if (isType(imp, 'array')) 
+        return imp.forEach(([q, a]) => addQnA({ q, a, immediate: false }));
+
     const { memorize, notIntroduced } = store.getState();
     const meDict = arrToDict(memorize, 'id');
     const niDict = arrToDict(notIntroduced, 'id');
 
-    obj.memorize.forEach(x => meDict[x.id] = x);
-    obj.notIntroduced.forEach(x => niDict[x.id] = x);
+    imp.memorize.forEach(x => meDict[x.id] = x);
+    imp.notIntroduced.forEach(x => niDict[x.id] = x);
 
     store.setState({
         memorize: objVals(meDict),
         notIntroduced: objVals(niDict),
     });
 }
+
+export const auth = new Auth({ GOOGLE_CLIENT_ID });
+
+store.actionSub([
+    Action.loginSuccess,
+    Action.logOut,
+], async (a) => {
+    switch (a.type) {
+        case 'LOGIN_SUCCESS':
+            const pr = (await auth.google).currentUser.get().getBasicProfile();
+            
+            return store.setState({
+                user: {
+                    email: pr.getEmail(),
+                    name: pr.getName(),
+                    imgUrl: pr.getImageUrl(),
+                },
+                alert: {
+                    type: 'info',
+                    title: 'Logged In',
+                    onClose: () => store.setState({ alert: null }),
+                    timeoutMs: 7500,
+                    style: { position: 'fixed', top: 75, right: 5, zIndex: 1100 }
+                }
+            });
+        case 'LOGOUT':
+            await auth.singOut('google');
+            return store.setState({
+                user: null,
+                alert: {
+                    type: 'info',
+                    title: 'Logged Out',
+                    onClose: () => store.setState({ alert: null }),
+                    timeoutMs: 7500,
+                    style: { position: 'fixed', top: 5, right: 5 }
+                }
+            });
+        default:
+            console.log(a);
+            throw new Error('Not Implemented');
+    }
+});

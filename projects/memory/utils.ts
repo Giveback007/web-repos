@@ -16,6 +16,8 @@ export class Memory {
     /** Adds to score on success */
     ease: number = set.baseEase;
 
+    updatedOn?: number;
+
     readonly timeCreated: number = Date.now();
     readonly id: string = uuid();
 
