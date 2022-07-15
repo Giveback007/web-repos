@@ -14,7 +14,7 @@
 
         <script>
             // This is here to ensure the browser-sync is properly connected.
-            setTimeout(() => {
+            if (isDev) setTimeout(() => {
                 const src = '/browser-sync/browser-sync-client.js';
 
                 const hasBS = Array.from(document.querySelectorAll('script'))

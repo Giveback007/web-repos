@@ -8,7 +8,7 @@ import { projects } from './projects';
     
     const opts = {
         ...projects[idx],
-        env: { envFile: '.env' },
+        env: { envFile: '.env', define: { isDev: true } },
     };
     opts.fromDir = 'projects/' + opts.fromDir
     opts.toDir = opts.toDir.replace('dist/', '.cache/');
