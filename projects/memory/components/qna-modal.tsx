@@ -3,9 +3,11 @@ import { Button, Modal } from 'my-alyce-component-lib';
 import React, { useEffect, useState } from 'react';
 import { deleteMem, updateMem } from '../store';
 import { calcMem, genSimplifiedTime, Memory } from '../utils';
+import { EditMem } from './edit-mem-modal';
 
 export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
     const [showAnswer, setShowAnswer] = useState(false);
+    const [showEdit, setShowEdit] = useState(false);
     const [tStart] = useState(Date.now());
     const [useTimer, setUseTimer] = useState(true);
     const [tPass, setTPass] = useState(0);
@@ -23,7 +25,7 @@ export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
         <QnAShow exit={exit} mem={mem} />
         :
         <div>
-            <h1 style={{fontSize: "large"}}>Q:</h1>
+            {/* <h1 style={{fontSize: "large"}}>Q:</h1> */}
             <p style={{fontSize: "1.75rem"}}>{mem.question}</p>
             <Button
                 size='auto'
@@ -37,25 +39,34 @@ export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
         </div>;
 
     const { m, s } = msTimeObj(tPass);
-    return <Modal
+    return <>{showEdit && <EditMem exit={() => setShowEdit(false)} memId={mem.id}/>}<Modal
         onBackdropClick={exit}
         onClose={exit}
-        header={<div style={{display: 'flex', alignItems: 'center'}}>
-            <Button
-                type='danger'
-                shape='flat'
-                onClick={() => {
-                    const yes = confirm(`Delete: \nQ: ${mem.question} \nA: ${mem.answer}`);
-                    if (yes) {
-                        exit();
-                        deleteMem(mem.id)
-                    }
-                }}
-                style={{marginRight: '1rem'}}
-            >Delete</Button>
-            <p className="text-2xl font-bold">{`${m}:${s} | Q-n-A`}</p>
-        </div>}
-    >{content}</Modal>;
+        style={showEdit ? { display: 'none' } : undefined}
+        header={
+            <div style={{display: 'flex', alignItems: 'center'}}>
+                <Button
+                    type='info'
+                    shape='flat'
+                    onClick={() => setShowEdit(true)}
+                    style={{marginRight: '1rem'}}
+                >Edit</Button>
+                <Button
+                    type='danger'
+                    shape='flat'
+                    onClick={() => {
+                        const yes = confirm(`Delete: \nQ: ${mem.question} \nA: ${mem.answer}`);
+                        if (yes) {
+                            exit();
+                            deleteMem(mem.id)
+                        }
+                    }}
+                    style={{marginRight: '1rem'}}
+                >Delete</Button>
+                <p className="text-2xl font-bold">{`${m}:${s}`}</p>
+            </div>
+        }
+    >{content}</Modal></>;
 }
 
 function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
@@ -73,10 +84,10 @@ function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
     const onFail = calcMem(mem, false);
     
     return <>
-        <h1 style={{fontSize: "large"}}>Q:</h1>
+        {/* <h1 style={{fontSize: "large"}}>Q:</h1> */}
         <p style={{fontSize: "1.75rem"}}>{mem.question}</p>
         <hr style={{margin: '1rem 0'}} />
-        <h1 style={{fontSize: "large"}}>A:</h1>
+        {/* <h1 style={{fontSize: "large"}}>A:</h1> */}
         <p style={{fontSize: "1.75rem"}}>{mem.answer}</p>
 
         <div style={{display: 'flex', borderTop: 'solid 2px black', marginTop: '1rem'}}>

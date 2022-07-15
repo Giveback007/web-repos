@@ -6,12 +6,10 @@ export function AddWord(p: { exit: () => any }) {
     const [btnType, setBtnType] = useState<'primary' | 'success'>('primary')
     const [q, setQ] = useState('');
     const [a, setA] = useState('');
-    const [n, setN] = useState(store.getState().memorize.length + 1);
 
     const disableSubmit = !q || !a;
     const handleSubmit = (immediate: boolean) => {
         addQnA({ q, a, immediate });
-        setN(n + 1);
         setQ('');
         setA('');
         setBtnType('success');
@@ -19,7 +17,6 @@ export function AddWord(p: { exit: () => any }) {
     }
 
     return <Modal
-        header={`Add QnA: #${n}`}
         onBackdropClick={p.exit}
         onClose={p.exit}
     >

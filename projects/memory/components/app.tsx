@@ -1,7 +1,7 @@
-import { min, objKeys, msTimeObj, days } from "@giveback007/util-lib";
-import { Button } from "my-alyce-component-lib";
+import { min, objKeys, msTimeObj, days, wait, AnyObj } from "@giveback007/util-lib";
+import { Alert, Avatar, Button } from "my-alyce-component-lib";
 import React, { Component } from "react";
-import { learnNewWord, link, State } from "../store";
+import { auth, learnNewWord, link, State, store } from "../store";
 import { genSimplifiedTime } from "../utils";
 import { AddWord } from "./add-word-modal";
 import { ExportWordsModal } from "./export-words-modal";
@@ -11,24 +11,95 @@ import { QnaModal } from "./qna-modal";
 type S = {
     modal: 'add-word' | 'q-n-a' | 'import-words' | 'export-words' | null;
     selectedId: string | null;
+    isSigningIn: boolean;
 };
 
 type P = State;
 export const App = link(s => s, class extends Component<P, S> {
     state: S = {
         modal: null,
-        selectedId: null
+        selectedId: null,
+        isSigningIn: true,
+    }
+
+    componentDidMount = async () => {
+        const res = await auth.refresh();
+        if (res.type == 'success') store.action({ type: 'LOGIN_SUCCESS' });
+
+        const objToFormData = <T extends Object>(obj: T, fileName: string, folder?: string) => {
+            const file = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+            const metadata = {
+                name: fileName, // Filename at Google Drive
+                mimeType: 'application/json', // mimeType at Google Drive
+            };
+
+            if (folder) (metadata as any).parents = [folder];
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+            form.append('file', file);
+
+            return form;
+        }
+        
+
+        // const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
+        // const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
+        //     method: 'POST',
+        //     headers: {
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        //     body: objToFormData({
+        //         test1: 'THIS IS ONLY A TEST!'
+        //     }, 'Test-File-2', 'appDataFolder')
+        // })
+        // const x = await response.json();
+        // console.log(x);
+
+
+
+        // const id = "10L-1Taa0fMY8UPfSAsYkpQkYKDZUULd9wMghMV_2Nr_0rfBlSg"
+        
+
+        // try {
+        //     const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
+        //     const res = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, { headers: { Authorization: `Bearer ${token}` } });
+        //     // const blob = await res.blob();
+        //     // const file = new File([await res.blob()], 'STUFF');
+            
+        //     const fr = new FileReader();
+        //     fr.onload = (e) => {
+        //         console.log(e)
+        //         const result = e.target?.result;
+        //         e.target
+        //         if (!result) return;
+
+        //         console.log(JSON.parse(result))
+        //       };
+
+        //       fr.readAsText(await res.blob());
+        //     // console.log(await JSON.parse())
+        //     // return new File([await res.blob()], fileName, {lastModified: Date.now()});
+        // } catch(err) {
+        //     console.log(err);
+        //     throw new Error();
+        // }
+        
+        
+
+        store.setState({ isLoading: false });
+        this.setState({ isSigningIn: false });
     }
 
     render() {
         const WordsString = ({ nReady, t }: { nReady: number, t: string }) =>
             <h1 style={{ fontSize: 'large', textAlign: 'center' }}>{`[${nReady}] ${t}`}</h1>;
 
-        const { modal, selectedId } = this.state;
+        const { modal, selectedId, isSigningIn } = this.state;
         const {
             memorize, readyQnA, memoryDict, tNow,
             nReadyIn5min, nReadyToday, nReadyTomorrow, nReadyThisWeek,
-            nextIncomingId, notIntroduced
+            nextIncomingId, notIntroduced, alert, user
         } = this.props;
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
@@ -71,7 +142,7 @@ export const App = link(s => s, class extends Component<P, S> {
             {`${ready} Ready`}
         </h1>;
 
-        return <div style={{maxWidth: 650, margin: 'auto', padding: '0 0.2rem'}}>
+        return <>{alert && <Alert {...alert} />}<div style={{maxWidth: 650, margin: 'auto', padding: '0 0.2rem'}}>
             <div style={{ display: 'flex' }}>
                 <Button
                     shape='flat'
@@ -79,27 +150,27 @@ export const App = link(s => s, class extends Component<P, S> {
                     style={{flex: 1}}
                     size='lg'
                     onClick={() => this.setState({ modal: 'add-word' })}
-                >Add Word</Button>
+                >Add Mem</Button>
                 <Button
                     shape='flat'
                     type='info'
                     style={{flex: 1}}
                     size='lg'
                     onClick={() => this.setState({ modal: 'import-words' })}
-                >Import Words</Button>
+                >Import Mem</Button>
                 <Button
                     shape='flat'
                     type='secondary'
                     style={{flex: 1}}
                     size='lg'
                     onClick={() => this.setState({ modal: 'export-words' })}
-                >Export Words</Button>
+                >Export Mem</Button>
             </div>
 
             <div style={{display: 'flex', border: 'solid 1px lightgray'}}>
-                <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Stored Words: {notIntroduced.length}</h1>
+                <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Stored: {notIntroduced.length}</h1>
                 <div style={{borderRight: 'solid 1px lightgray', margin: '0 0.3rem'}}/>
-                <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Review Words: {memorize.length}</h1>
+                <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Review: {memorize.length}</h1>
             </div>
 
             <div style={{marginTop: '1rem'}}>
@@ -119,7 +190,7 @@ export const App = link(s => s, class extends Component<P, S> {
                     disabled={!memorize.length}
                     onClick={() =>
                         this.setState({ modal: 'q-n-a', selectedId: memorize[0].id })}
-                >{memorize.length ? 'Skip Wait' : 'No Words Added'}</Button>}
+                >{memorize.length ? 'Skip Wait' : 'No Mem Added'}</Button>}
             </div>
 
             <Button
@@ -128,13 +199,21 @@ export const App = link(s => s, class extends Component<P, S> {
                 disabled={!notIntroduced.length}
                 style={{marginTop: '0.5rem'}}
                 onClick={() => this.setState({ selectedId: learnNewWord() })}
-            >{notIntroduced.length ? 'Learn New Word' : 'No Words In Storage'}</Button>
+            >{notIntroduced.length ? 'Learn New Word' : 'None In Storage'}</Button>
 
             {/* <br/> */}
-            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}>
+            <div 
+            // style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}
+            >
                 
                 {!!readyQnA.length && <>
-                    <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Review:</h1>
+
+                    {(forReview.length) ? 
+                        <>
+                            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
+                            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Review:</h1>
+                        </> : null
+                    }
                     
                     {forReview.map(id => {
                         const { question } = memoryDict[id];
@@ -148,7 +227,7 @@ export const App = link(s => s, class extends Component<P, S> {
                         >{question}</Button>
                     })}
 
-                    {(forReview.length && forLearn.length) ? 
+                    {forLearn.length ? 
                         <>
                             <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
                             <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Learn:</h1>
@@ -168,11 +247,90 @@ export const App = link(s => s, class extends Component<P, S> {
                     })}
                 </>}
             </div>
+
+            {user && user !== 'loading' ?
+                <Button
+                    size="md"
+                    type="info"
+                    outline
+                    style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
+                    onClick={async () => {
+                        const sub = store.stateSub('user', async ({ user }) => {
+                            if (!user) {
+                                await wait(0);
+                                this.setState({ isSigningIn: false });
+                                store.setState({ isLoading: false });
+                                sub.unsubscribe();
+                            }
+                        }, true);
+                
+                        store.setState({ isLoading: true });
+                        store.action({ type: 'LOGOUT' });
+                    }}
+                >
+                    <Avatar
+                        dataState="done"
+                        imgSrc={user.imgUrl}
+                        size="md"
+                    />
+                </Button>
+                :
+                <Button
+                    size="sm"
+                    outline
+                    type="secondary"
+                    disabled={isSigningIn}
+                    onClick={async () => {
+                        this.setState({ isSigningIn: true });
+                        try {
+                            await auth.signIn('google');
+                            store.action({ type: 'LOGIN_SUCCESS' });
+                        } catch {
+                            store.setState({ alert: {
+                                type: 'danger',
+                                title: 'Failed To Login',
+                                text: "Something went wrong please try again",
+                                timeoutMs: 7000,
+                                onClose: () => store.setState({ alert: null }),
+                                style: { position: 'fixed', top: 5, right: 5 }
+                            } })
+                        }
+                        
+                        this.setState({ isSigningIn: false });
+                    }}
+                    className="py-2.5 px-3 rounded-md flex items-center mt-3.5"
+                    style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
+                >
+                    {googleLogo}
+                    <p className="text-base font-medium ml-4">Login</p>
+                </Button>
+            }
+
+            <Button
+                type='danger'
+                size="lg"
+                style={{ position: 'fixed', bottom: '0.2rem', left: '0.2rem' }}
+                onClick={() => {
+                    const yes = confirm(`🗑️ Delete All Mem?`) && confirm(`⚠️⚠️⚠️ ARE YOU SURE?? 🗑️ DELETE ALL?? ⚠️⚠️⚠️`);
+                    if (yes) {
+                        store.setState({ memorize: [], deleted: [], notIntroduced: [] })
+                    }
+                }}
+            >
+                Reset
+            </Button>
             
             {modal === 'q-n-a' && selectedId && <QnaModal mem={memoryDict[selectedId]} exit={() => this.setState({ modal: null, selectedId: null })} />}
             {modal === 'add-word' && <AddWord exit={() => this.setState({ modal: null })} />}
             {modal === 'import-words' && <ImportWordsModal exit={() => this.setState({ modal: null })} />}
             {modal === 'export-words' && <ExportWordsModal exit={() => this.setState({ modal: null })}/>}
-        </div>
+        </div></>
     }
 });
+
+const googleLogo = <svg width="19" height="20" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0812L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z" fill="#4285F4" />
+    <path d="M9.68813 19.9314C12.3039 19.9314 14.4999 19.0455 16.1039 17.5174L13.0467 15.0813C12.2286 15.6682 11.1306 16.0779 9.68813 16.0779C7.12612 16.0779 4.95165 14.3395 4.17651 11.9366L4.06289 11.9465L1.07231 14.3273L1.0332 14.4391C2.62638 17.6946 5.89889 19.9314 9.68813 19.9314Z" fill="#34A853" />
+    <path d="M4.17667 11.9366C3.97215 11.3165 3.85378 10.6521 3.85378 9.96562C3.85378 9.27905 3.97215 8.6147 4.16591 7.99463L4.1605 7.86257L1.13246 5.44363L1.03339 5.49211C0.37677 6.84302 0 8.36005 0 9.96562C0 11.5712 0.37677 13.0881 1.03339 14.4391L4.17667 11.9366Z" fill="#FBBC05" />
+    <path d="M9.68807 3.85336C11.5073 3.85336 12.7344 4.66168 13.4342 5.33718L16.1684 2.59107C14.4892 0.985496 12.3039 0 9.68807 0C5.89885 0 2.62637 2.23672 1.0332 5.49214L4.16573 7.99466C4.95162 5.59183 7.12608 3.85336 9.68807 3.85336Z" fill="#EB4335" />
+</svg>

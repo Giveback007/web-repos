@@ -21,9 +21,22 @@ export function ImportWordsModal(p: { exit: () => any }) {
         />
         <Button size='auto' type='primary' shape='flat' onClick={() => {
             try {
-                const json = JSON.parse(text) as { memorize: Memory[]; notIntroduced: Memory[] };
-                if (!isType(json, 'object'))
-                    throw '[JSON is not an object]';
+                const json = JSON.parse(text) as { memorize: Memory[]; notIntroduced: Memory[] } | [string, string][];
+
+                if (isType(json, 'array')) {
+                    json.forEach((tpl, i) => {
+                        if (tpl.length !== 2)
+                            throw `[In array idx: ${i}, there must be only 2 items]`;
+                        
+                        if (!isType(tpl[0], 'string') || !isType(tpl[1], 'string'))
+                            throw `[In array idx: ${i}, both items are not type string]`
+                    });
+
+                    return importWords(json);
+                }
+
+                if (!isType(json, 'object') && !isType(json, 'array'))
+                    throw '[JSON is not an object || array]';
         
                 const { memorize, notIntroduced } = json;
                 if (!memorize && !notIntroduced) throw '[No keys found: "memorize" || "notIntroduced"]'
