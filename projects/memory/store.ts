@@ -52,6 +52,7 @@ export type State = {
      * initialize: do first sync
      */
     syncStatus: 'not-ready' | 'initialize' | 'syncing' | 'ready',
+    syncUpdatedOn: number;
     syncState: {
         id: string;
         memorize: Memory[];
@@ -91,6 +92,7 @@ export const store = new StateManager<State>({
     user: null,
     alert: null,
     syncStatus: 'not-ready',
+    syncUpdatedOn: 0,
     syncState: null,
 
     notIntroduced: [],
@@ -205,7 +207,7 @@ store.stateSub(['syncStatus'], async (s) => {
             
             // const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
             // const data = await api.readJSONFile(files[0].id);
-            // log({ id: files[0].id, data: x, token})
+            // log({ id: files[0].id, data, token});
             
             await store.setState({ syncState, syncStatus: 'ready' });
         }

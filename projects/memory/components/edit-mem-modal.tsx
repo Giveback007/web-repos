@@ -22,8 +22,7 @@ export function EditMem(p: { exit: () => any, memId: string }) {
         dict[memId] = { ...mem, question: q.trim(), answer: a.trim(), updatedOn: Date.now() };
         store.setState({ memorize: objVals(dict) });
 
-        wait(500).then(() => setBtnType('primary'));
-        wait(650).then(() => exit());
+        wait(550).then(() => exit());
     }
 
     return <Modal

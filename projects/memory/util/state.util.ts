@@ -12,7 +12,8 @@ export function addQnA({ q, a, immediate }: { q: string; a: string; immediate: b
 
 export function updateMem(id: string, success: boolean) {
     const dict = {...store.getState().memoryDict};
-    const mem = calcMem({...dict[id]}, success);
+    const mem: Memory = calcMem({...dict[id]}, success);
+    mem.updatedOn = Date.now();
 
     dict[id] = mem;
     const memorize = objVals(dict);

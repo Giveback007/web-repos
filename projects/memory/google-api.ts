@@ -9,8 +9,6 @@ export class GoogleApis {
         return token;
     }
 
-
-
     private get = async (url: string) => {
         try {
             const token = await this.getToken();
@@ -70,13 +68,10 @@ export class GoogleApis {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                
             };
 
-            if (body !== undefined) {
+            if (body !== undefined)
                 opts.body = JSON.stringify(body)
-                
-            };
 
             const res = await fetch(`https://www.googleapis.com/${url}`, opts);
             
@@ -88,7 +83,7 @@ export class GoogleApis {
     }
 
     private async getJSON<T>(url: string) {
-        const res = await this.get(`${url}`);
+        const res = await this.get(url);
         return await res.json() as T;
     }
 
@@ -96,6 +91,10 @@ export class GoogleApis {
         const res = await this.get(url);
         return new File([await res.blob()], fileName, { lastModified: Date.now() });
     }
+
+    getFileMetaData = (id: string, fields: string[] = []) =>
+        // https://developers.google.com/drive/api/guides/fields-parameter
+        this.getJSON(`drive/v3/files/${id}` + fields.length ? `fields=${fields.join(',')}` : '');
 
     deleteFile = async (id: string) => {
         await this.delete(`drive/v3/files/${id}`);

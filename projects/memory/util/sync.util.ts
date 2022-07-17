@@ -49,7 +49,7 @@ export async function initOnlineState() {
     try {
         const { id } = await api.uploadFile(objToFormData(obj, set.syncFileName, 'appDataFolder'));
         if (!id) throw new Error('Failed to sync data.');
-        return {...obj, id};
+        return {...obj, id, updatedOn: Date.now()};
     } catch(err) {
         console.log(err);
         store.setState({ syncStatus: 'not-ready', alert: {
@@ -62,11 +62,6 @@ export async function initOnlineState() {
         throw new Error('Failed To Init Sync Data');
     }
 }
-
-// const uploadState1 = <T>(o: T, id?: string) => {
-//     const api = new GoogleApis();
-//     return id ? api.updateFile(id, o) : api.uploadFile(objToFormData(o, set.syncFileName, 'appDataFolder'));
-// }
 
 const genMap = <T extends { id: string }>(o: T[]) => new Map(o.map(x => [x.id, x]));
 const merge = <T extends Map<string, Memory>>(map1: T, map2: T) => {
