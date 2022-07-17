@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Button, Modal, TextArea } from "my-alyce-component-lib";
 import { isType, objKeys, type } from "@giveback007/util-lib";
-import { Memory } from "../utils";
-import { importWords } from "../store";
+import { Memory } from "../util/utils";
+import { importWords } from "../util/state.util";
 
 export function ImportWordsModal(p: { exit: () => any }) {
     const [text, setText] = useState('');

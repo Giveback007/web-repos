@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Modal, TextInput } from "my-alyce-component-lib";
-import { addQnA, store } from "../store";
+import { addQnA } from "../util/state.util";
 
 export function AddWord(p: { exit: () => any }) {
     const [btnType, setBtnType] = useState<'primary' | 'success'>('primary')

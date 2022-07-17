@@ -1,3 +1,4 @@
+import './init';
 import 'my-alyce-component-lib/dist/index.css';
 import React from 'react';
 import ReactDOM from "react-dom";

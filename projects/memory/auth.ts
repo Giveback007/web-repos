@@ -78,11 +78,11 @@ export class Auth {
                 // https://developers.google.com/identity/sign-in/web/reference#gapiauth2clientconfig
                 const GoogleAuth = gapi.auth2.init({
                     // CREDENTIALS PAGE: https://console.developers.google.com/apis/credentials?project=my-docs-341319
-                    client_id: p.GOOGLE_CLIENT_ID, 
+                    client_id: p.GOOGLE_CLIENT_ID,
                     scope: "profile"
-                        + " https://www.googleapis.com/auth/drive"
-                        // https://developers.google.com/drive/api/guides/appdata
+                        // + " https://www.googleapis.com/auth/drive"
                         + " https://www.googleapis.com/auth/drive.appdata"
+                        // https://developers.google.com/drive/api/guides/appdata
                 });
 
                 GoogleAuth.then(async (gAuth) => {

@@ -1,8 +1,9 @@
 import { min, objKeys, msTimeObj, days, wait, AnyObj } from "@giveback007/util-lib";
 import { Alert, Avatar, Button } from "my-alyce-component-lib";
 import React, { Component } from "react";
-import { auth, learnNewWord, link, State, store } from "../store";
-import { genSimplifiedTime } from "../utils";
+import { auth, link, State, store } from "../store";
+import { deleteMem, learnNewWord } from "../util/state.util";
+import { genSimplifiedTime } from "../util/utils";
 import { AddWord } from "./add-word-modal";
 import { ExportWordsModal } from "./export-words-modal";
 import { ImportWordsModal } from "./import-words-modal";
@@ -25,23 +26,6 @@ export const App = link(s => s, class extends Component<P, S> {
     componentDidMount = async () => {
         const res = await auth.refresh();
         if (res.type == 'success') store.action({ type: 'LOGIN_SUCCESS' });
-
-        const objToFormData = <T extends Object>(obj: T, fileName: string, folder?: string) => {
-            const file = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-            const metadata = {
-                name: fileName, // Filename at Google Drive
-                mimeType: 'application/json', // mimeType at Google Drive
-            };
-
-            if (folder) (metadata as any).parents = [folder];
-
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-            form.append('file', file);
-
-            return form;
-        }
-        
 
         // const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
         // const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
@@ -75,9 +59,9 @@ export const App = link(s => s, class extends Component<P, S> {
         //         if (!result) return;
 
         //         console.log(JSON.parse(result))
-        //       };
+        //     };
 
-        //       fr.readAsText(await res.blob());
+        //     fr.readAsText(await res.blob());
         //     // console.log(await JSON.parse())
         //     // return new File([await res.blob()], fileName, {lastModified: Date.now()});
         // } catch(err) {
@@ -99,7 +83,8 @@ export const App = link(s => s, class extends Component<P, S> {
         const {
             memorize, readyQnA, memoryDict, tNow,
             nReadyIn5min, nReadyToday, nReadyTomorrow, nReadyThisWeek,
-            nextIncomingId, notIntroduced, alert, user
+            nextIncomingId, notIntroduced, alert, user, isLoading,
+            syncStatus
         } = this.props;
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
@@ -249,43 +234,72 @@ export const App = link(s => s, class extends Component<P, S> {
             </div>
 
             {user && user !== 'loading' ?
-                <Button
-                    size="md"
-                    type="info"
-                    outline
-                    style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
-                    onClick={async () => {
-                        const sub = store.stateSub('user', async ({ user }) => {
-                            if (!user) {
-                                await wait(0);
-                                this.setState({ isSigningIn: false });
-                                store.setState({ isLoading: false });
-                                sub.unsubscribe();
-                            }
-                        }, true);
+                // <Button
+                //     size="md"
+                //     type="info"
+                //     style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
+                //     onClick={async () => {
+                //         const sub = store.stateSub('user', async ({ user }) => {
+                //             if (!user) {
+                //                 await wait(0);
+                //                 this.setState({ isSigningIn: false });
+                //                 store.setState({ isLoading: false });
+                //                 sub.unsubscribe();
+                //             }
+                //         }, true);
                 
-                        store.setState({ isLoading: true });
-                        store.action({ type: 'LOGOUT' });
-                    }}
+                //         store.setState({ isLoading: true });
+                //         store.action({ type: 'LOGOUT' });
+                //     }}
+                // >
+                    
+                // </Button>
+                <div
+                    style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
                 >
                     <Avatar
-                        dataState="done"
+                        dataState={(isLoading || syncStatus === 'syncing' || syncStatus === 'initialize')? "loading" : "done"}
                         imgSrc={user.imgUrl}
                         size="md"
+                        name="Logout"    
+                        onClick={async () => {
+                            store.setState({ isLoading: true });
+                            await wait(1500);
+
+                            const sub = store.stateSub('user', async ({ user }) => {
+                                if (!user) {
+                                    await wait(0);
+                                    this.setState({ isSigningIn: false });
+                                    store.setState({ isLoading: false });
+                                    sub.unsubscribe();
+                                }
+                            }, true);
+                            
+                            store.action({ type: 'LOGOUT' });
+                        }}
                     />
-                </Button>
+                </div>
+                
                 :
                 <Button
-                    size="sm"
-                    outline
-                    type="secondary"
+                    size="md"
+                    type="success"
                     disabled={isSigningIn}
                     onClick={async () => {
                         this.setState({ isSigningIn: true });
                         try {
                             await auth.signIn('google');
+                            const sub = store.stateSub('user', async ({ user }) => {
+                                if (user) {
+                                    await wait(0);
+                                    this.setState({ isSigningIn: false });
+                                    sub.unsubscribe();
+                                }
+                            }, true);
+
                             store.action({ type: 'LOGIN_SUCCESS' });
                         } catch {
+                            this.setState({ isSigningIn: false });
                             store.setState({ alert: {
                                 type: 'danger',
                                 title: 'Failed To Login',
@@ -295,8 +309,6 @@ export const App = link(s => s, class extends Component<P, S> {
                                 style: { position: 'fixed', top: 5, right: 5 }
                             } })
                         }
-                        
-                        this.setState({ isSigningIn: false });
                     }}
                     className="py-2.5 px-3 rounded-md flex items-center mt-3.5"
                     style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
@@ -312,13 +324,9 @@ export const App = link(s => s, class extends Component<P, S> {
                 style={{ position: 'fixed', bottom: '0.2rem', left: '0.2rem' }}
                 onClick={() => {
                     const yes = confirm(`🗑️ Delete All Mem?`) && confirm(`⚠️⚠️⚠️ ARE YOU SURE?? 🗑️ DELETE ALL?? ⚠️⚠️⚠️`);
-                    if (yes) {
-                        store.setState({ memorize: [], deleted: [], notIntroduced: [] })
-                    }
+                    if (yes) deleteMem('DELETE-ALL');
                 }}
-            >
-                Reset
-            </Button>
+            >Reset</Button>
             
             {modal === 'q-n-a' && selectedId && <QnaModal mem={memoryDict[selectedId]} exit={() => this.setState({ modal: null, selectedId: null })} />}
             {modal === 'add-word' && <AddWord exit={() => this.setState({ modal: null })} />}

@@ -1,5 +1,10 @@
-import { arrGen, days, dys, hours, hrs, min, msToDys, msToHrs, msToMin, msToSec, msToWks, uuid, weeks } from "@giveback007/util-lib";
-import { set } from "./store";
+import {
+    arrGen, days, hours,
+    min, msToDys, msToHrs,
+    msToMin, msToSec, msToWks,
+    uuid, weeks
+} from "@giveback007/util-lib";
+import { set, store } from "../store";
 
 
 export class Memory {
@@ -16,15 +21,20 @@ export class Memory {
     /** Adds to score on success */
     ease: number = set.baseEase;
 
-    updatedOn?: number;
+    updatedOn: number;
 
-    readonly timeCreated: number = Date.now();
+    readonly timeCreated: number;
     readonly id: string = uuid();
 
     constructor(
         public question: string,
         public answer: string
-    ) { }
+    ) {
+        const now = Date.now();
+
+        this.timeCreated = now;
+        this.updatedOn = now;
+    }
 };
 
 // ------------------------ //
@@ -132,4 +142,20 @@ export function arrRmIdx<T>(arr: T[], idx: number) {
     newArr.splice(idx, 1);
 
     return newArr;
+}
+
+export const objToFormData = <T extends Object>(obj: T, fileName: string, folder?: string) => {
+    const file = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+    const metadata = {
+        name: fileName, // Filename at Google Drive
+        mimeType: 'application/json', // mimeType at Google Drive
+    };
+
+    if (folder) (metadata as any).parents = [folder];
+
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    form.append('file', file);
+
+    return form;
 }

@@ -18,7 +18,10 @@ setTimeout(async () => {
         const promises = projects.map(opt => buildBrowser({
             ...opt,
             fromDir: 'projects/' + opt.fromDir,
-            env: { define: { GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID, isDev: false } }
+            env: { define: {
+                GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+                isDev: false
+            } }
         }));
         await Promise.all(promises);
 

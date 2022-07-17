@@ -1,10 +1,12 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { isType, wks } from "@giveback007/util-lib";
-import { arrToDict, Dict, dys, min, objVals, rand, sec } from "@giveback007/util-lib";
+import { debounceTimeOut, equal, wait, wks } from "@giveback007/util-lib";
+import { arrToDict, Dict, dys, min } from "@giveback007/util-lib";
 import type { AlertProps } from "my-alyce-component-lib";
 import { Action } from "./actions";
 import { Auth } from "./auth";
-import { arrRmIdx, calcMem, Memory } from "./utils";
+import { GoogleApis } from "./google-api";
+import { genSyncObj, initOnlineState, syncOnlineState } from "./util/sync.util";
+import type { Memory } from "./util/utils";
 
 type User = {
     email: string;
@@ -36,6 +38,8 @@ export const set = {
     easeAdd: 0.1,
     /** Ease subtract on fail */
     easeSub: 0.3,
+
+    syncFileName: 'SyncData_V1.json',
 } as const;
 
 // -- STORE -- //
@@ -43,6 +47,17 @@ export type State = {
     isLoading: boolean;
     user: User | null | 'loading';
     alert: AlertProps | null;
+    /** 
+     * not-read: no syncing will be done
+     * initialize: do first sync
+     */
+    syncStatus: 'not-ready' | 'initialize' | 'syncing' | 'ready',
+    syncState: {
+        id: string;
+        memorize: Memory[];
+        deleted: { id: string, date: number }[];
+        notIntroduced: Memory[];
+    } | null;
     
     /** List of memories not introduced yet */
     notIntroduced: Memory[];
@@ -75,6 +90,8 @@ export const store = new StateManager<State>({
     isLoading: true,
     user: null,
     alert: null,
+    syncStatus: 'not-ready',
+    syncState: null,
 
     notIntroduced: [],
     memorize: [],
@@ -90,8 +107,8 @@ export const store = new StateManager<State>({
     nReadyThisWeek: 0,
     tNow: Date.now(),
 }, {
-    id: 'memory-helper-v2',
-    useKeys: ['memorize', 'notIntroduced'],
+    id: 'memory-helper-v2', // this has to be user-based
+    useKeys: ['memorize', 'notIntroduced', 'deleted'],
 });
 
 export const link = stateManagerReactLinker(store);
@@ -143,85 +160,97 @@ export function timeFromMem(memorize: Memory[]) {
     }
 }
 
-// -- STORE UTILS -- //
-export function addQnA({ q, a, immediate }: { q: string; a: string; immediate: boolean; }) {
-    const key = immediate ? 'memorize' : 'notIntroduced';
-    const mem = new Memory(q, a);
 
-    store.setState({ [key]: [...store.getState()[key], mem ] });
-}
+// https://developers.google.com/drive/api/v3/reference/files/watch
 
-export function updateMem(id: string, success: boolean) {
-    const dict = {...store.getState().memoryDict};
-    const mem = calcMem({...dict[id]}, success);
 
-    dict[id] = mem;
-    const memorize = objVals(dict);
-    store.setState({ memorize });
-}
-
-export function deleteMem(id: string) {
-    const { memoryDict, deleted: del } = store.getState();
-    const dict = { ...memoryDict};
-
-    delete dict[id];
-
-    const deleted = [...del];
-    deleted.push({ id, date: Date.now() })
-
-    const memorize = objVals(dict);
-    store.setState({ memorize, deleted });
-}
-
-export function importMems(mems: Memory[]) {
-    const dict = arrToDict(store.getState().memorize, 'id');
-    mems.forEach(m => dict[m.id] = m);
-
-    store.setState({ memorize: objVals(dict) });
-}
-
-export function learnNewWord() {
-    const { notIntroduced: ni, memorize } = store.getState();
-    const idx = rand(0, ni.length - 1);
-    const mem = ni[idx];
-    const notIntroduced = arrRmIdx(ni, idx);
+store.stateSub(['deleted', 'memorize', 'notIntroduced'], async (s) => {
+    if (!s.syncState) return;
     
-    store.setState({ notIntroduced, memorize: [...memorize, mem] });
-    return mem.id;
-}
+    await wait(0);
+    store.setState({ syncState: { ...genSyncObj(s), id: s.syncState.id } });
+});
 
-/** Take a list of   */
-export function importWords(imp: {
-    memorize: Memory[];
-    notIntroduced: Memory[]
-} | [string, string][]) {
-    if (isType(imp, 'array')) 
-        return imp.forEach(([q, a]) => addQnA({ q, a, immediate: false }));
+const debounce = debounceTimeOut();
+store.stateSub(['syncState'], (s, prev) => {
+    if (!(s.syncStatus === 'ready' || s.syncStatus === 'syncing')) return;
+    if (equal(genSyncObj(s), prev?.syncState && genSyncObj(prev))) return;
 
-    const { memorize, notIntroduced } = store.getState();
-    const meDict = arrToDict(memorize, 'id');
-    const niDict = arrToDict(notIntroduced, 'id');
+    store.setState({ syncStatus: 'syncing' });
+    return debounce(async () => {
+        await syncOnlineState(prev?.syncState || s.syncState);
+        store.setState({ syncStatus: 'ready' });
+    }, 1500);
+})
 
-    imp.memorize.forEach(x => meDict[x.id] = x);
-    imp.notIntroduced.forEach(x => niDict[x.id] = x);
+// 1
+store.stateSub(['syncStatus'], async (s) => {
+    const { syncStatus } = s;
+    
+    if (syncStatus === 'initialize') {
+        const api = new GoogleApis();
+        const { files } = await api.searchJSON({ name: set.syncFileName, appDataFolder: true });
 
-    store.setState({
-        memorize: objVals(meDict),
-        notIntroduced: objVals(niDict),
-    });
-}
+        // const { files: f2 } = await api.searchJSON({ appDataFolder: true });
+        // log('ALL-FILES:', f2.length, f2);
+        // await Promise.all(f2.map(({ id }) => api.deleteFile(id)));
+        // return log('DONE!')
+
+        if (!files[0]) {
+            const syncState = await initOnlineState();
+            store.setState({ syncState, syncStatus: 'ready' });
+        } else {
+            const id = files[0].id;
+            const syncState = { ...await api.readJSONFile(id), id };
+            
+            // const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
+            // const data = await api.readJSONFile(files[0].id);
+            // log({ id: files[0].id, data: x, token})
+            
+            await store.setState({ syncState, syncStatus: 'ready' });
+        }
+    }
+});
 
 export const auth = new Auth({ GOOGLE_CLIENT_ID });
-
 store.actionSub([
     Action.loginSuccess,
     Action.logOut,
 ], async (a) => {
     switch (a.type) {
         case 'LOGIN_SUCCESS':
-            const pr = (await auth.google).currentUser.get().getBasicProfile();
+            const cr = (await auth.google).currentUser
+            const pr = cr.get().getBasicProfile();
+
+            if (!cr.get().hasGrantedScopes('https://www.googleapis.com/auth/drive.appdata')) {
+                store.setState({
+                    alert: {
+                        type: 'warning',
+                        title: 'Access Needed To Syncing Across Devices... ',
+                        style: { position: 'fixed', top: 5, right: 5, zIndex: 9999 },
+                        onClose: () => store.setState({ alert: null }),
+                    }
+                });
+
+                try {
+                    await cr.get().grant({
+                        scope: 'https://www.googleapis.com/auth/drive.appdata'
+                    });
+                } catch {
+                    return store.setState({
+                        alert: {
+                            type: 'danger',
+                            title: "Failed To Receive Syncing Access",
+                            onClose: () => store.setState({ alert: null }),
+                            timeoutMs: 5000,
+                            style: { position: 'fixed', top: 5, right: 5, zIndex: 9999 }
+                        }
+                    })
+                }
+            }
             
             return store.setState({
+                syncStatus: 'initialize',
                 user: {
                     email: pr.getEmail(),
                     name: pr.getName(),
@@ -231,8 +260,8 @@ store.actionSub([
                     type: 'info',
                     title: 'Logged In',
                     onClose: () => store.setState({ alert: null }),
-                    timeoutMs: 7500,
-                    style: { position: 'fixed', top: 75, right: 5, zIndex: 1100 }
+                    timeoutMs: 5000,
+                    style: { position: 'fixed', top: 5, right: 5, zIndex: 9999 }
                 }
             });
         case 'LOGOUT':
@@ -244,7 +273,7 @@ store.actionSub([
                     title: 'Logged Out',
                     onClose: () => store.setState({ alert: null }),
                     timeoutMs: 7500,
-                    style: { position: 'fixed', top: 5, right: 5 }
+                    style: { position: 'fixed', top: 5, right: 5, zIndex: 9999 }
                 }
             });
         default:

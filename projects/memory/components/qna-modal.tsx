@@ -1,8 +1,8 @@
 import { interval, msTimeObj } from '@giveback007/util-lib';
 import { Button, Modal } from 'my-alyce-component-lib';
 import React, { useEffect, useState } from 'react';
-import { deleteMem, updateMem } from '../store';
-import { calcMem, genSimplifiedTime, Memory } from '../utils';
+import { deleteMem, updateMem } from '../util/state.util';
+import { calcMem, genSimplifiedTime, Memory } from '../util/utils';
 import { EditMem } from './edit-mem-modal';
 
 export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
