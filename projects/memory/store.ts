@@ -1,5 +1,5 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { debounceTimeOut, equal, wait, wks } from "@giveback007/util-lib";
+import { debounceTimeOut, equal, getDayStartEnd, hrs, objVals, wait, wks } from "@giveback007/util-lib";
 import { arrToDict, Dict, dys, min } from "@giveback007/util-lib";
 import type { AlertProps } from "my-alyce-component-lib";
 import { Action } from "./actions";
@@ -120,18 +120,25 @@ export const link = stateManagerReactLinker(store);
 store.stateSub('memorize', s => {
     const memorize = s.memorize.sort((a, b) => a.reviewOn - b.reviewOn);
     const memoryDict = arrToDict(memorize, 'id');
+    const notIntroduced = s.notIntroduced.filter(x => !memoryDict[x.id]);
     
-    store.setState({ memoryDict, memorize, ...timeFromMem(memorize) });
+    store.setState({ memoryDict, notIntroduced, memorize, ...timeFromMem(memorize) });
 }, true);
 
 export function timeFromMem(memorize: Memory[]) {
     const dNow = new Date()
     const tNow = dNow.getTime();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const { end: todaysEnd } = getDayStartEnd(dNow);
+    const { end: tmrsEnd } = getDayStartEnd(tomorrow);
     
     const readyQnA: string[] = [];
     let nReadyIn5min =      0; const min5 = tNow + min(5);
-    let nReadyToday =       0; const dys1 = tNow + dys(1);
-    let nReadyTomorrow =    0; const dys2 = tNow + dys(2);
+    let nReadyToday =       0; const dys1 = todaysEnd.getTime() + hrs(1.99);//tNow + dys(1);
+    let nReadyTomorrow =    0; const dys2 = tmrsEnd.getTime() + hrs(1.99);
     let nReadyThisWeek =    0; const wks1 = tNow + wks(1);
     let nextIncomingId: null | string = null;
 
@@ -155,7 +162,7 @@ export function timeFromMem(memorize: Memory[]) {
         nextIncomingId,
         readyQnA,
         nReadyIn5min,
-        nReadyToday,
+        nReadyToday: nReadyToday + readyQnA.length,
         nReadyTomorrow,
         nReadyThisWeek,
         tNow
@@ -165,9 +172,8 @@ export function timeFromMem(memorize: Memory[]) {
 
 // https://developers.google.com/drive/api/v3/reference/files/watch
 
-
 store.stateSub(['deleted', 'memorize', 'notIntroduced'], async (s) => {
-    if (!s.syncState) return;
+    if (!s.syncState || !s.user) return;
     
     await wait(0);
     store.setState({ syncState: { ...genSyncObj(s), id: s.syncState.id } });

@@ -52,15 +52,15 @@ export const App = link(s => s, class extends Component<P, S> {
         this.setState({ isSigningIn: false });
     }
 
-    setQnA = async (id: string | 'NEXT' | null): Promise<void> => {
+    setQnA = async (id: string | 'NEXT' | null): Promise<any> => {
         const { readyQnA, memoryDict } = this.props;
         
         this.setState({ modal: null, selectedId: null });
         await wait(0);
         
         if (id === 'NEXT') {
-            const next = readyQnA[0] || await learnNewWord();
-            if (!next) return;
+            const next = readyQnA[0];
+            if (!next) return learnNewWord();
             
             this.setState({ modal: 'q-n-a', selectedId: next });
         } else if (id) {
@@ -74,12 +74,13 @@ export const App = link(s => s, class extends Component<P, S> {
     render() {
         
         const WordsString = ({ nReady, t }: { nReady: number, t: string }) =>
-            <h1 style={{ fontSize: 'large', textAlign: 'center' }}>{`[${nReady}] ${t}`}</h1>;
+            <span style={{ fontSize: '1.1rem', textAlign: 'center', flex: 1 }}>{`[${nReady}] ${t}`}</span>;
 
         const { modal, selectedId, isSigningIn } = this.state;
         const {
             memorize, readyQnA, memoryDict, tNow,
             nReadyIn5min, nextIncomingId, notIntroduced,
+            nReadyTomorrow, nReadyToday,
             alert, user, isLoading, syncStatus
         } = this.props;
 
@@ -120,7 +121,7 @@ export const App = link(s => s, class extends Component<P, S> {
 
         const ready = readyQnA.length || false;
         const readyWords = ready && <h1 style={{margin: '0 0.5rem', fontSize: '1.5rem'}}>
-            {`${ready} Ready`}
+            {`${ready} Ready Now`}
         </h1>;
 
         return <>{alert && <Alert {...alert} />}<div style={{maxWidth: 650, margin: 'auto', padding: '0 0.2rem'}}>
@@ -156,12 +157,16 @@ export const App = link(s => s, class extends Component<P, S> {
                 <h1 style={{fontSize: 'x-large', textAlign: 'center', flex: 1}}>Review: {memorize.length}</h1>
             </div>
 
-            <div style={{marginTop: '1rem'}}>
+            <div style={{
+                marginTop: '1rem',
+                display: 'flex',
+                // justifyContent: 'space-around'
+            }}>
                 {([
                     // [nReadyThisWeek, 'This Week'],
-                    // [nReadyTomorrow, 'Tomorrow'],
-                    // [nReadyToday, 'Today'],
                     [nReadyIn5min, 'In < 5min'],
+                    [nReadyToday, 'Today'],
+                    [nReadyTomorrow, 'Tomorrow'],
                 ] as const).map(([nReady, t]) => <WordsString {...{nReady, t}}/>) }
             </div>
                 
