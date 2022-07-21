@@ -54,13 +54,15 @@ export function importMems(mems: Memory[]) {
     store.setState({ memorize: objVals(dict) });
 }
 
-export function learnNewWord() {
+export async function learnNewWord() {
     const { notIntroduced: ni, memorize } = store.getState();
+    if (!ni.length) return null;
+    
     const idx = rand(0, ni.length - 1);
     const mem = ni[idx];
     const notIntroduced = arrRmIdx(ni, idx);
     
-    store.setState({ notIntroduced, memorize: [...memorize, mem] });
+    await store.setState({ notIntroduced, memorize: [...memorize, mem] });
     return mem.id;
 }
 

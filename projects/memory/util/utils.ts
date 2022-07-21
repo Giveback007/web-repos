@@ -83,22 +83,30 @@ export const genSimplifiedTime = (ms: number, from: number = Date.now()) => {
 
     else if (dif < min(1)) {
         const s = Math.ceil(msToSec(dif));
-        return `${s} seconds`;
+        return `${s}s`;
     } else if (dif < hours(1)) {
         const m = Math.round(msToMin(dif));
-        return `${m} minute${m > 1 ? 's' : ''}`;
+        return `${m}m`//${m > 1 ? 's' : ''}`;
     } else if (dif < days(1)) {
         const h = Math.round(msToHrs(dif));
-        return `${h} hour${h > 1 ? 's' : ''}`;
+        return `${h}h`//${h > 1 ? 's' : ''}`;
     } else if (dif < weeks(1)) {
         const d = Math.round(msToDys(dif));
         return `${d} day${d > 1 ? 's' : ''}`;
-    } else if (dif < weeks(52)) {
+    } else if (dif < weeks(4)) {
         const w = Math.round(msToWks(dif));
-        return `${w} week${w > 1 ? 's' : ''}`
+        return `${w} week${w > 1 ? 's' : ''}`;
+    } else if (dif < weeks(52)) {
+        const d = msToDys(dif);
+        const m = (d / (364.25 / 12)).toFixed(1);
+        return `${m} month${Number(m) > 1 ? 's' : ''}`;
+    } else {
+        const d = msToDys(dif);
+        const y = (d / 364.25).toFixed(1);
+        return `${y} year${Number(y) > 1 ? 's' : ''}`;
     }
     
-    return getDate(dt);
+    // return getDate(dt);
 }
 
 export function calcMem(mem: Memory, success: boolean) {
@@ -159,3 +167,6 @@ export const objToFormData = <T extends Object>(obj: T, fileName: string, folder
 
     return form;
 }
+
+export const isTxtInput = (x: any) => 
+    x instanceof HTMLElement && (x.tagName === 'INPUT' || x.tagName === 'TEXTAREA');

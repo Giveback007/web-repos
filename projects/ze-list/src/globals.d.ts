@@ -11,14 +11,12 @@ declare module '*.jpeg';
 declare module '*.jpg';
 declare module '*.png';
 declare module '*.svg';
-declare module '*.jpg';
 declare module '*.gif';
-declare module '*.json';
 
-// interface global { 
-//     log: typeof console['log'];
-// }
+declare module '*.json';
 
 declare const log: typeof console['log'];
 
 declare const GOOGLE_CLIENT_ID: string;
+
+declare module 'gamecontroller.js';

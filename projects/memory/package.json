@@ -12,8 +12,7 @@
         "my-alyce-component-lib": "^0.1.26",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
-        "tslib": "~2.3.1"
-    },
-    "devDependencies": {
+        "tslib": "~2.3.1",
+        "gamecontroller.js": "1.5.0"
     }
 }

@@ -347,11 +347,15 @@ const x: [string, string][] = [];
     // ],
 ];
 
-// Possessive Pronouns
+// Possessive Pronouns ??? !!! ???
 [
     [ 
         "Tu",
         "Your"
+    ],
+    [
+        "Nuestro",
+        "Our/Ours"
     ]
 ];
 

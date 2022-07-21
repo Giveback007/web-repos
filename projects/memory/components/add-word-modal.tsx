@@ -22,6 +22,7 @@ export function AddWord(p: { exit: () => any }) {
     >
         <TextInput
             label='Question'
+            autoFocus
             value={q}
             onChange={(e: any) => setQ(e.target.value)}
         />

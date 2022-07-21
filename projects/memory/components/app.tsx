@@ -1,9 +1,9 @@
-import { min, objKeys, msTimeObj, days, wait, AnyObj } from "@giveback007/util-lib";
+import { min, objKeys, msTimeObj, days, wait } from "@giveback007/util-lib";
 import { Alert, Avatar, Button } from "my-alyce-component-lib";
 import React, { Component } from "react";
 import { auth, link, State, store } from "../store";
 import { deleteMem, learnNewWord } from "../util/state.util";
-import { genSimplifiedTime } from "../util/utils";
+import { genSimplifiedTime, isTxtInput } from "../util/utils";
 import { AddWord } from "./add-word-modal";
 import { ExportWordsModal } from "./export-words-modal";
 import { ImportWordsModal } from "./import-words-modal";
@@ -23,68 +23,64 @@ export const App = link(s => s, class extends Component<P, S> {
         isSigningIn: true,
     }
 
+    keyListener = (e: KeyboardEvent) => {
+        const { target, key } = e;
+        if (
+            isTxtInput(target)
+            ||
+            this.state.modal
+            ||
+            !this.props.readyQnA.length
+        ) return;
+
+        if (key === 'Enter' || key === 'ArrowDown') {
+            const id = this.props.readyQnA[0];
+            this.setState({ selectedId: id, modal: 'q-n-a' })
+        }
+    }
+
+    componentWillUnmount = () =>
+        removeEventListener('keydown', this.keyListener);
+
     componentDidMount = async () => {
+        addEventListener('keydown', this.keyListener);
+
         const res = await auth.refresh();
         if (res.type == 'success') store.action({ type: 'LOGIN_SUCCESS' });
-
-        // const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
-        // const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
-        //     method: 'POST',
-        //     headers: {
-        //         Authorization: `Bearer ${token}`,
-        //     },
-        //     body: objToFormData({
-        //         test1: 'THIS IS ONLY A TEST!'
-        //     }, 'Test-File-2', 'appDataFolder')
-        // })
-        // const x = await response.json();
-        // console.log(x);
-
-
-
-        // const id = "10L-1Taa0fMY8UPfSAsYkpQkYKDZUULd9wMghMV_2Nr_0rfBlSg"
-        
-
-        // try {
-        //     const token = (await auth.google).currentUser.get().getAuthResponse().access_token;
-        //     const res = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, { headers: { Authorization: `Bearer ${token}` } });
-        //     // const blob = await res.blob();
-        //     // const file = new File([await res.blob()], 'STUFF');
-            
-        //     const fr = new FileReader();
-        //     fr.onload = (e) => {
-        //         console.log(e)
-        //         const result = e.target?.result;
-        //         e.target
-        //         if (!result) return;
-
-        //         console.log(JSON.parse(result))
-        //     };
-
-        //     fr.readAsText(await res.blob());
-        //     // console.log(await JSON.parse())
-        //     // return new File([await res.blob()], fileName, {lastModified: Date.now()});
-        // } catch(err) {
-        //     console.log(err);
-        //     throw new Error();
-        // }
-        
-        
 
         store.setState({ isLoading: false });
         this.setState({ isSigningIn: false });
     }
 
+    setQnA = async (id: string | 'NEXT' | null): Promise<void> => {
+        const { readyQnA, memoryDict } = this.props;
+        
+        this.setState({ modal: null, selectedId: null });
+        await wait(0);
+        
+        if (id === 'NEXT') {
+            const next = readyQnA[0] || await learnNewWord();
+            if (!next) return;
+            
+            this.setState({ modal: 'q-n-a', selectedId: next });
+        } else if (id) {
+            const mem = memoryDict[id];
+            if (!mem) throw new Error(`Mem with id: ${id} not found`);
+
+            this.setState({ modal: 'q-n-a', selectedId: id });
+        }
+    }
+
     render() {
+        
         const WordsString = ({ nReady, t }: { nReady: number, t: string }) =>
             <h1 style={{ fontSize: 'large', textAlign: 'center' }}>{`[${nReady}] ${t}`}</h1>;
 
         const { modal, selectedId, isSigningIn } = this.state;
         const {
             memorize, readyQnA, memoryDict, tNow,
-            nReadyIn5min, nReadyToday, nReadyTomorrow, nReadyThisWeek,
-            nextIncomingId, notIntroduced, alert, user, isLoading,
-            syncStatus
+            nReadyIn5min, nextIncomingId, notIntroduced,
+            alert, user, isLoading, syncStatus
         } = this.props;
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
@@ -128,7 +124,9 @@ export const App = link(s => s, class extends Component<P, S> {
         </h1>;
 
         return <>{alert && <Alert {...alert} />}<div style={{maxWidth: 650, margin: 'auto', padding: '0 0.2rem'}}>
-            <div style={{ display: 'flex' }}>
+            <div
+                style={{ display: 'flex' }}
+            >
                 <Button
                     shape='flat'
                     type='primary'
@@ -173,8 +171,7 @@ export const App = link(s => s, class extends Component<P, S> {
                 {readyWords}
                 {!ready && <Button
                     disabled={!memorize.length}
-                    onClick={() =>
-                        this.setState({ modal: 'q-n-a', selectedId: memorize[0].id })}
+                    onClick={() => this.setQnA(memorize[0].id)}
                 >{memorize.length ? 'Skip Wait' : 'No Mem Added'}</Button>}
             </div>
 
@@ -183,14 +180,10 @@ export const App = link(s => s, class extends Component<P, S> {
                 type="primary"
                 disabled={!notIntroduced.length}
                 style={{marginTop: '0.5rem'}}
-                onClick={() => this.setState({ selectedId: learnNewWord() })}
-            >{notIntroduced.length ? 'Learn New Word' : 'None In Storage'}</Button>
+                onClick={async () => this.setState({ selectedId: await learnNewWord() })}
+            >{notIntroduced.length ? 'Learn New Mem' : 'None In Storage'}</Button>
 
-            {/* <br/> */}
-            <div 
-            // style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}
-            >
-                
+            <div>
                 {!!readyQnA.length && <>
 
                     {(forReview.length) ? 
@@ -206,9 +199,7 @@ export const App = link(s => s, class extends Component<P, S> {
                             style={{ margin: '0.2rem' }}
                             shape="flat"
                             size='xl'
-                            onClick={() => {
-                                this.setState({ modal: 'q-n-a', selectedId: id });
-                            }}
+                            onClick={() => this.setQnA(id)}
                         >{question}</Button>
                     })}
 
@@ -225,35 +216,13 @@ export const App = link(s => s, class extends Component<P, S> {
                             style={{ margin: '0.2rem' }}
                             shape="flat"
                             size='xl'
-                            onClick={() => {
-                                this.setState({ modal: 'q-n-a', selectedId: id });
-                            }}
+                            onClick={() => this.setQnA(id)}
                         >{question}</Button>
                     })}
                 </>}
             </div>
 
             {user && user !== 'loading' ?
-                // <Button
-                //     size="md"
-                //     type="info"
-                //     style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
-                //     onClick={async () => {
-                //         const sub = store.stateSub('user', async ({ user }) => {
-                //             if (!user) {
-                //                 await wait(0);
-                //                 this.setState({ isSigningIn: false });
-                //                 store.setState({ isLoading: false });
-                //                 sub.unsubscribe();
-                //             }
-                //         }, true);
-                
-                //         store.setState({ isLoading: true });
-                //         store.action({ type: 'LOGOUT' });
-                //     }}
-                // >
-                    
-                // </Button>
                 <div
                     style={{ position: 'fixed', bottom: '0.2rem', right: '0.2rem' }}
                 >
@@ -328,7 +297,7 @@ export const App = link(s => s, class extends Component<P, S> {
                 }}
             >Reset</Button>
             
-            {modal === 'q-n-a' && selectedId && <QnaModal mem={memoryDict[selectedId]} exit={() => this.setState({ modal: null, selectedId: null })} />}
+            {modal === 'q-n-a' && selectedId && <QnaModal mem={memoryDict[selectedId]} exit={(showNext) => this.setQnA(showNext ? 'NEXT' : null)} />}
             {modal === 'add-word' && <AddWord exit={() => this.setState({ modal: null })} />}
             {modal === 'import-words' && <ImportWordsModal exit={() => this.setState({ modal: null })} />}
             {modal === 'export-words' && <ExportWordsModal exit={() => this.setState({ modal: null })}/>}

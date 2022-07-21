@@ -1,11 +1,11 @@
-import { interval, msTimeObj } from '@giveback007/util-lib';
+import { interval, msTimeObj, wait } from '@giveback007/util-lib';
 import { Button, Modal } from 'my-alyce-component-lib';
 import React, { useEffect, useState } from 'react';
 import { deleteMem, updateMem } from '../util/state.util';
-import { calcMem, genSimplifiedTime, Memory } from '../util/utils';
+import { calcMem, genSimplifiedTime, isTxtInput, Memory } from '../util/utils';
 import { EditMem } from './edit-mem-modal';
 
-export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
+export function QnaModal({ exit, mem }: { exit: (showNext?: boolean) => any, mem: Memory }) {
     const [showAnswer, setShowAnswer] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [tStart] = useState(Date.now());
@@ -20,12 +20,25 @@ export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
 
         return itv.stop;
     }, [tStart, useTimer]);
+
+    useEffect(() => {
+        function keyListener(e: KeyboardEvent) {
+            const { target, key } = e;
+            if (isTxtInput(target) || showEdit) return;
+
+            if (key === 'Enter' || key === 'ArrowDown') {
+                setShowAnswer(true);
+            }
+        }
+
+        addEventListener('keydown', keyListener);
+        return () => removeEventListener('keydown', keyListener);
+    });
     
     const content = showAnswer ?
         <QnAShow exit={exit} mem={mem} />
         :
         <div>
-            {/* <h1 style={{fontSize: "large"}}>Q:</h1> */}
             <p style={{fontSize: "1.75rem"}}>{mem.question}</p>
             <Button
                 size='auto'
@@ -35,20 +48,23 @@ export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
                     setUseTimer(false);
                 }}
                 style={{marginTop: '1rem'}}
-            >Show</Button>
+            >Show [Enter]</Button>
         </div>;
 
     const { m, s } = msTimeObj(tPass);
     return <>{showEdit && <EditMem exit={() => setShowEdit(false)} memId={mem.id}/>}<Modal
-        onBackdropClick={exit}
-        onClose={exit}
+        onBackdropClick={() => exit()}
+        onClose={() => exit()}
         style={showEdit ? { display: 'none' } : undefined}
         header={
             <div style={{display: 'flex', alignItems: 'center'}}>
                 <Button
                     type='info'
                     shape='flat'
-                    onClick={() => setShowEdit(true)}
+                    onClick={() => {
+                        setShowAnswer(false);
+                        setShowEdit(true);
+                    }}
                     style={{marginRight: '1rem'}}
                 >Edit</Button>
                 <Button
@@ -69,12 +85,35 @@ export function QnaModal({ exit, mem }: { exit: () => any, mem: Memory }) {
     >{content}</Modal></>;
 }
 
-function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
+function QnAShow({ exit, mem }: { exit: (showNext?: boolean) => any, mem: Memory }) {
+    const [disable, setDisable] = useState(true);
+    const [didPass, setDidPass] = useState<null | 'yes' | 'no'>(null);
 
-    const update = (sucess: boolean) => {
-        updateMem(mem.id, sucess);
-        exit();
+    const update = async (success: boolean, showNext?: boolean) => {
+        setDidPass(success ? 'yes' : 'no');
+        await wait(0)
+        updateMem(mem.id, success);
+        await wait(670);
+
+        exit(showNext);
     };
+
+    useEffect(() => {
+        wait(300).then(() => setDisable(false));
+
+        function keyListener(e: KeyboardEvent) {
+            const { target, key } = e;
+            if (isTxtInput(target) || disable) return;
+
+            if (didPass && (key === 'Enter' || key === 'ArrowDown')) exit(true);
+            
+            if (key === 'KeyA' || key === 'ArrowLeft') update(false, true);
+            if (key === 'KeyD' || key === 'ArrowRight') update(true, true);
+        }
+
+        addEventListener('keydown', keyListener);
+        return () => removeEventListener('keydown', keyListener);
+    });
     
     const statsStyles: React.CSSProperties = {
         flex: 1, padding: '0.2rem', display: 'flex', flexDirection: 'column'
@@ -83,7 +122,11 @@ function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
     const onSuccess = calcMem(mem, true);
     const onFail = calcMem(mem, false);
     
-    return <>
+    return didPass ? <h1 style={{
+        fontSize: "8rem",
+        textAlign: 'center',
+        borderTop: 'solid 2px grey'
+    }}>{didPass === 'yes' ? '👍' : '👎'}</h1> : <>
         {/* <h1 style={{fontSize: "large"}}>Q:</h1> */}
         <p style={{fontSize: "1.75rem"}}>{mem.question}</p>
         <hr style={{margin: '1rem 0'}} />
@@ -105,18 +148,20 @@ function QnAShow({ exit, mem }: { exit: () => any, mem: Memory }) {
 
         <div style={{ display: 'flex', marginTop: '1rem' }}>
             <Button
+                disabled={disable}
                 shape='flat'
                 type='danger'
                 style={{ flex: 1 }}
                 onClick={() => update(false)}
-            >👎 {`-> ${genSimplifiedTime(onFail.reviewOn)}`}</Button>
+            >[A] 👎 {` ➔ ${genSimplifiedTime(onFail.reviewOn)}`}</Button>
             <Button
+                disabled={disable}
                 shape='flat'
                 type='success'
                 style={{ flex: 1 }}
                 onClick={() => update(true)}
-            >👍
-            {` -> ${genSimplifiedTime(onSuccess.reviewOn)}`}</Button>
+            >[D] 👍
+            {` ➔ ${genSimplifiedTime(onSuccess.reviewOn)}`}</Button>
         </div>
     </>
 }
