@@ -1,7 +1,7 @@
 import { min, objKeys, msTimeObj, days, wait } from "@giveback007/util-lib";
 import { Alert, Avatar, Button } from "my-alyce-component-lib";
 import React, { Component } from "react";
-import { auth, link, State, store } from "../store";
+import { auth, link, set, State, store } from "../store";
 import { deleteMem, learnNewWord } from "../util/state.util";
 import { genSimplifiedTime, isTxtInput } from "../util/utils";
 import { AddWord } from "./add-word-modal";
@@ -89,16 +89,18 @@ export const App = link(s => s, class extends Component<P, S> {
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
 
-        const { forReview, forLearn } = (() => {
+        const { forReview, forLearn, difficult } = (() => {
             const dict = memoryDict;
             const obj = {
                 forReview:  [] as string[],
                 forLearn:   [] as string[],
+                difficult:   [] as string[],
             }
 
             readyQnA.sort((a, b) => dict[b].score - dict[a].score).forEach(id => {
-                const key = dict[id].timing > days(1) ? 'forReview' : 'forLearn';
-                obj[key].push(id)
+                const mem = dict[id];
+                if (mem.timing > days(2)) return obj.forReview.push(id);
+                obj[mem.score < set.baseScore ? 'difficult' : 'forLearn'].push(id)
             });
 
             return obj;
@@ -178,8 +180,8 @@ export const App = link(s => s, class extends Component<P, S> {
             }}>
                 {([
                     [nReadyTomorrow, 'Tomorrow'],
-                    [nReadyThisWeek, '3d > x < 7d'],
-                    [nReadyNextWeek, 'NextWeek'],
+                    [nReadyThisWeek, 'This Week'],
+                    [nReadyNextWeek, 'Next Week'],
                 ] as const).map(([nReady, t]) => <WordsString {...{nReady, t}}/>) }
             </div>
 
@@ -231,6 +233,23 @@ export const App = link(s => s, class extends Component<P, S> {
                     }
 
                     {forLearn.map(id => {
+                        const { question } = memoryDict[id];
+                        return <Button
+                            style={{ margin: '0.2rem' }}
+                            shape="flat"
+                            size='xl'
+                            onClick={() => this.setQnA(id)}
+                        >{question}</Button>
+                    })}
+
+                    {forLearn.length ? 
+                        <>
+                            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
+                            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Difficult:</h1>
+                        </> : null
+                    }
+
+                    {difficult.map(id => {
                         const { question } = memoryDict[id];
                         return <Button
                             style={{ margin: '0.2rem' }}

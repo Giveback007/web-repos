@@ -2,8 +2,8 @@ import './init';
 import 'my-alyce-component-lib/dist/index.css';
 import React from 'react';
 import ReactDOM from "react-dom";
-import { debounceTimeOut, sec, wait } from '@giveback007/util-lib';
-import { State, store, timeFromMem } from './store';
+import { debounceTimeOut, sec } from '@giveback007/util-lib';
+import { store, timeFromMem } from './store';
 import { App } from './components/app';
 import 'gamecontroller.js';
 
@@ -31,6 +31,21 @@ declare global {
 
     /** React App Render */
     ReactDOM.render(<App />, document.getElementById("root"));
+
+    (global as any).getWords = (hrs: number = Infinity) => {
+        const timing = hrs * 60 * 60000;
+        
+        return store.getState().memorize.filter(x => {
+            const words = x.question.split(' ');
+            if (
+                words.length !== 1
+                ||
+                !/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+$/.test(words[0])
+            ) return false;
+
+            return x.timing <= timing
+        }).map(({ question }) => question.toLocaleLowerCase());
+    }
 })();
 
 gameControl.on('connect', (gp: any) => {
@@ -40,11 +55,6 @@ gameControl.on('connect', (gp: any) => {
         [ 'button14', 'ArrowLeft' ],
         [ 'button15', 'ArrowRight' ],
         [ 'button3', 'KeyX' ],
-        // [ 'l1', 'ArrowLeft' ],
-        // [ 'r1', 'ArrowRight' ],
-        // [ 'button2', 'ArrowLeft' ],
-        // [ 'button1', 'ArrowRight' ],
-        // [ 'start', 'Enter' ]
       ].map(([btn, key]) =>
         [btn, () => dispatchEvent(new KeyboardEvent("keydown", { key }))] as const)
     
@@ -78,11 +88,3 @@ const gameCtrlBtns = [
 
     "start", "select", "power",
 ].map(btn => [btn, () => log(btn)] as const);
-
-
-(global as any).getWords = (timing: number | null = null) => {
-    const { memorize } = store.getState();
-    if (!timing) return memorize;
-    
-    return memorize.filter(x => x.timing <= timing);
-}

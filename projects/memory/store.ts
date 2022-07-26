@@ -19,14 +19,13 @@ export const set = {
     /** Minimum time for review */
     minTime: 3500,
 
-
     // -- Score is the multiplier of timing on success -- //
     /** Minimum score */
-    minScore: 1.1,
+    minScore: 0.01,
     /** Score divide on fail */
     scoreDivide: 2,
     /** Starting score for a memory */
-    baseScore: 1.5,
+    baseScore: 2,
 
 
     // -- Ease is the number added to the score on success -- //
@@ -37,7 +36,7 @@ export const set = {
     /** Ease add on success */
     easeAdd: 0.1,
     /** Ease subtract on fail */
-    easeSub: 0.3,
+    easeSub: 0.8,
 
     syncFileName: 'SyncData_V1.json',
 } as const;

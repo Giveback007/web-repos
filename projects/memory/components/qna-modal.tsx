@@ -24,11 +24,14 @@ export function QnaModal({ exit, mem }: { exit: (showNext?: boolean) => any, mem
     useEffect(() => {
         function keyListener(e: KeyboardEvent) {
             const { target, key } = e;
-            if (isTxtInput(target) || showEdit) return;
+            
+            if (!isTxtInput(target) && key === 'KeyX')
+                return exit(false);
+            if (isTxtInput(target) || showEdit)
+                return;
 
-            if (key === 'Enter' || key === 'ArrowDown') {
+            if (key === 'Enter' || key === 'ArrowDown')
                 setShowAnswer(true);
-            }
         }
 
         addEventListener('keydown', keyListener);
@@ -48,7 +51,7 @@ export function QnaModal({ exit, mem }: { exit: (showNext?: boolean) => any, mem
                     setUseTimer(false);
                 }}
                 style={{marginTop: '1rem'}}
-            >Show [Enter]</Button>
+            >Show</Button>
         </div>;
 
     const { m, s } = msTimeObj(tPass);
@@ -93,7 +96,7 @@ function QnAShow({ exit, mem }: { exit: (showNext?: boolean) => any, mem: Memory
         setDidPass(success ? 'yes' : 'no');
         updateMem(mem.id, success);
 
-        await wait(showNext ? 350 : 100);
+        await wait(showNext ? 350 : 150);
         exit(showNext);
     };
 
@@ -152,14 +155,14 @@ function QnAShow({ exit, mem }: { exit: (showNext?: boolean) => any, mem: Memory
                 type='danger'
                 style={{ flex: 1 }}
                 onClick={() => update(false)}
-            >[A] 👎 {` ➔ ${genSimplifiedTime(onFail.reviewOn)}`}</Button>
+            > 👎 {` ➔ ${genSimplifiedTime(onFail.reviewOn)}`}</Button>
             <Button
                 disabled={disable}
                 shape='flat'
                 type='success'
                 style={{ flex: 1 }}
                 onClick={() => update(true)}
-            >[D] 👍
+            > 👍
             {` ➔ ${genSimplifiedTime(onSuccess.reviewOn)}`}</Button>
         </div>
     </>

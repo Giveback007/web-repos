@@ -121,17 +121,17 @@ export function calcMem(mem: Memory, success: boolean) {
     if (score < set.minScore) score = set.minScore;
     
     const oldTiming = timing;
-    timing = success ? timing * score + 1500 : set.minTime;
+    timing = success ? (timing * (1 + score)) + 1500 : set.minTime;
 
     if (timing < set.minTime)
         timing = set.minTime;
-    else if (timing > days(2))
+    else if (timing > days(3))
         timing = oldTiming * Math.min(score, 2);
     else if (timing > hours(3))
-        timing = oldTiming * Math.min(score, 3);
+        timing = oldTiming * Math.min(score, 3.5);
 
     const now = new Date();
-    let onDate = new Date(Date.now() + timing);
+    let onDate = success ? new Date(Date.now() + timing) : now;
 
     // if review is not today
     if (timing > hours(1) && now.toDateString() !== onDate.toDateString()) {
