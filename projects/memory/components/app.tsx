@@ -78,9 +78,12 @@ export const App = link(s => s, class extends Component<P, S> {
 
         const { modal, selectedId, isSigningIn } = this.state;
         const {
+            nReadyIn5min, nReadyIn30min, nReadyToday,
+            nReadyTomorrow, nReadyThisWeek, nReadyNextWeek,
+
             memorize, readyQnA, memoryDict, tNow,
-            nReadyIn5min, nextIncomingId, notIntroduced,
-            nReadyTomorrow, nReadyToday,
+            nextIncomingId, notIntroduced,
+            
             alert, user, isLoading, syncStatus
         } = this.props;
 
@@ -163,12 +166,24 @@ export const App = link(s => s, class extends Component<P, S> {
                 // justifyContent: 'space-around'
             }}>
                 {([
-                    // [nReadyThisWeek, 'This Week'],
                     [nReadyIn5min, 'In < 5min'],
+                    [nReadyIn30min, 'In < 30min'],
                     [nReadyToday, 'Today'],
-                    [nReadyTomorrow, 'Tomorrow'],
                 ] as const).map(([nReady, t]) => <WordsString {...{nReady, t}}/>) }
             </div>
+            <div style={{
+                marginTop: '1rem',
+                display: 'flex',
+                // justifyContent: 'space-around'
+            }}>
+                {([
+                    [nReadyTomorrow, 'Tomorrow'],
+                    [nReadyThisWeek, '3d > x < 7d'],
+                    [nReadyNextWeek, 'NextWeek'],
+                ] as const).map(([nReady, t]) => <WordsString {...{nReady, t}}/>) }
+            </div>
+
+            
                 
             <br />
             <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column'}}>

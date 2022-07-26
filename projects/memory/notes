@@ -1,0 +1,78 @@
+https://www.lifehack.org/851026/spaced-repetition
+
+::Goal is to get in the zone while learning::
+  The idea is to always have words in the /Focus_Box/ which is words that are
+  in /Stage/ of /1/-(Learning) || 
+
+  There should be a "goal for the day", like introduce at least 5 words every day
+
+::Color words based on difficulty::
+  + The more difficult the word the more red
+  + >= 5 Is full red
+
+::Mem /Stage/::
+  0 - Not_Introduced
+  1 - Burrier (moved to the bottom of storage)
+
+  2 - Learning
+  3 - Re_Learning
+    + "Learned" /Lvl/ (1 to 4)
+      ++ 1 -> Now
+      ++ 2 -> 5min
+      ++ 3 -> 10min
+      ++ 4 -> 15min
+      ++ 5 -> 20min
+
+  4 - Graduated
+    + (on graduated) 15min * multiplier
+
+::When learning or relearning:
+  /Focus_Box/
+    + Generate this at start of session
+    + Use /Ready_Box/
+    + Have 12
+      ++ Prioritize re-learning
+      ++ 3 from hardest
+      ++ 9 from easiest
+      ++ If (/Ready_Box/ < 12) introduce new words
+    + Replenish when this is at 0
+    + --FOCUS BOX KEEPS TRACK--
+      ++ if (/isNewSession/ && /prevSessionStart/ > 5m-ago) reset /Focus_Box/
+        +++ Each /
+      ++ each /Lvl/ should complete 4 times -> /Lvl_Counter/
+      ++ if (fail on 1 of /Lvl/) drop down /Lvl/
+      ++ if (fail on >1 of /Lvl/) drop to 1 of /Lvl/
+
+  /Ready_Box/
+    + If (word is "ready" after a timer) it moves to the /Ready_Box/
+    + If (word moves up a (/Lvl_Counter/ || /Lvl/)
+
+::Multiplier::
+  max_mult = 3;
+  multiplier = Math.max(max_mult / (difficulty + 1), 1.1);
+  nextReview = now + (timing * multiplier);
+
+::Difficulty::
+  On success:
+  difficulty = (difficulty - 0.05) / 1.035; // round to nearest 2 decimals
+
+  On fail:
+  difficulty += 1;
+
+::Line Graphs::
+  + Words graduated
+    ++ Will see it dropping if words are being move to re-learn
+  + Words introduced (7 day sma)
+  + Words in re-learn (idea is to make info useful so I can prevent words from going into relearn)
+  + Times to repeat the word before it 
+
+::Weekly Info::
+  
+::Evolutionary Algorithms::
+  - Give each algo an id, and divide the mems between the algos
+  - The learning/re_learning and graduated have their own algos
+  - On 100 learning/re_learning of said algo give a score
+      + The 
+  - On 100 
+
+// If word is 2 days or more set review at the beginning of the day

@@ -91,15 +91,14 @@ function QnAShow({ exit, mem }: { exit: (showNext?: boolean) => any, mem: Memory
 
     const update = async (success: boolean, showNext?: boolean) => {
         setDidPass(success ? 'yes' : 'no');
-        await wait(0)
         updateMem(mem.id, success);
-        await wait(670);
 
+        await wait(showNext ? 350 : 100);
         exit(showNext);
     };
 
     useEffect(() => {
-        wait(300).then(() => setDisable(false));
+        wait(350).then(() => setDisable(false));
 
         function keyListener(e: KeyboardEvent) {
             const { target, key } = e;

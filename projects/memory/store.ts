@@ -1,6 +1,6 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { debounceTimeOut, equal, getDayStartEnd, hrs, objVals, wait, wks } from "@giveback007/util-lib";
-import { arrToDict, Dict, dys, min } from "@giveback007/util-lib";
+import { debounceTimeOut, equal, getDayStartEnd, hrs, wait, wks } from "@giveback007/util-lib";
+import { arrToDict, Dict, min } from "@giveback007/util-lib";
 import type { AlertProps } from "my-alyce-component-lib";
 import { Action } from "./actions";
 import { Auth } from "./auth";
@@ -43,7 +43,7 @@ export const set = {
 } as const;
 
 // -- STORE -- //
-export type State = {
+export type State = ReturnType<typeof timeFromMem> & {
     isLoading: boolean;
     user: User | null | 'loading';
     alert: AlertProps | null;
@@ -76,15 +76,15 @@ export type State = {
     readyQnA: string[];
 
     /** The id of item to be added to readyQnA */
-    nextIncomingId: string | null;
+    // nextIncomingId: string | null;
 
     // -- TIME STATE -- //
-    nReadyIn5min: number,
-    nReadyToday: number,
-    nReadyTomorrow: number,
-    nReadyThisWeek: number,
+    // nReadyIn5min: number,
+    // nReadyToday: number,
+    // nReadyTomorrow: number,
+    // nReadyThisWeek: number,
 
-    tNow: number;
+    // tNow: number;
 }
 
 export const store = new StateManager<State>({
@@ -104,9 +104,11 @@ export const store = new StateManager<State>({
     nextIncomingId: null,
     
     nReadyIn5min: 0,
+    nReadyIn30min: 0,
     nReadyToday: 0,
     nReadyTomorrow: 0,
     nReadyThisWeek: 0,
+    nReadyNextWeek: 0,
     tNow: Date.now(),
 }, {
     id: 'memory-helper-v2', // this has to be user-based
@@ -118,6 +120,7 @@ export const link = stateManagerReactLinker(store);
 // -- EFFECTS -- //
 // TODO: this should be `Middleware`
 store.stateSub('memorize', s => {
+    // make sure to always sort by reviewOn
     const memorize = s.memorize.sort((a, b) => a.reviewOn - b.reviewOn);
     const memoryDict = arrToDict(memorize, 'id');
     const notIntroduced = s.notIntroduced.filter(x => !memoryDict[x.id]);
@@ -136,25 +139,38 @@ export function timeFromMem(memorize: Memory[]) {
     const { end: tmrsEnd } = getDayStartEnd(tomorrow);
     
     const readyQnA: string[] = [];
-    let nReadyIn5min =      0; const min5 = tNow + min(5);
-    let nReadyToday =       0; const dys1 = todaysEnd.getTime() + hrs(1.99);//tNow + dys(1);
-    let nReadyTomorrow =    0; const dys2 = tmrsEnd.getTime() + hrs(1.99);
-    let nReadyThisWeek =    0; const wks1 = tNow + wks(1);
+    let nReadyIn5min =      0; const min5   = tNow + min(5);
+    let nReadyIn30min =     0; const min30  = tNow + min(30);
+    let nReadyToday =       0; const dys1   = todaysEnd.getTime() + hrs(1.99);
+    let nReadyTomorrow =    0; const dys2   = tmrsEnd.getTime() + hrs(1.99);
+    let nReadyThisWeek =    0; const wks1   = tNow + wks(1);
+    let nReadyNextWeek =    0; const wks2   = tNow + wks(2);
     let nextIncomingId: null | string = null;
 
     /** Because memorize is sorted by `reviewOn`: */
     for (const { id, reviewOn: rw } of memorize) {
         if (rw < tNow) {
             readyQnA.push(id);
+            nReadyToday++;
+
             continue;
         }
         
         if (!nextIncomingId) nextIncomingId = id;
-        if (rw < min5) nReadyIn5min++;
 
-        if (rw < dys1) nReadyToday++;
-        if (rw < dys2) nReadyTomorrow++;
-        if (rw < wks1) nReadyThisWeek++;
+        if (rw < dys1) {
+            nReadyToday++;
+            if (rw < min5)
+                nReadyIn5min++;
+            else if (rw < min30)
+                nReadyIn30min++;
+        } else if (rw < dys2) {
+            nReadyTomorrow++;
+        } else if (rw < wks1) {
+            nReadyThisWeek++;
+        } else if (rw < wks2) {
+            nReadyNextWeek++;
+        }
         else break;
     }
 
@@ -162,16 +178,16 @@ export function timeFromMem(memorize: Memory[]) {
         nextIncomingId,
         readyQnA,
         nReadyIn5min,
-        nReadyToday: nReadyToday + readyQnA.length,
+        nReadyIn30min,
+        nReadyToday,
         nReadyTomorrow,
         nReadyThisWeek,
+        nReadyNextWeek,
         tNow
     }
 }
 
-
 // https://developers.google.com/drive/api/v3/reference/files/watch
-
 store.stateSub(['deleted', 'memorize', 'notIntroduced'], async (s) => {
     if (!s.syncState || !s.user) return;
     
