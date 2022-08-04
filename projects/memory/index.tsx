@@ -2,7 +2,7 @@ import './init';
 import 'my-alyce-component-lib/dist/index.css';
 import React from 'react';
 import ReactDOM from "react-dom";
-import { debounceTimeOut, sec } from '@giveback007/util-lib';
+import { debounceTimeOut, sec, wait } from '@giveback007/util-lib';
 import { store, timeFromMem } from './store';
 import { App } from './components/app';
 import 'gamecontroller.js';
@@ -48,16 +48,28 @@ declare global {
     }
 })();
 
-gameControl.on('connect', (gp: any) => {
-    const keys = [
+let keys: [string, () => boolean][];
+
+window.addEventListener("gamepadconnected", (e) => {
+    const tinyGamepad = e.gamepad.id === "Bluetooth Wireless Controller    (Vendor: 2dc8 Product: 3230)";
+    keys = (tinyGamepad ? [
+        ['down0', 'ArrowDown'],
+        ['button1', 'ArrowDown'],
+        ['left0', 'ArrowLeft'],
+        ['right0', 'ArrowRight'],
+        ['button3', 'KeyX'],
+    ] : [
         [ 'button0', 'ArrowDown' ],
         [ 'button13', 'ArrowDown' ],
         [ 'button14', 'ArrowLeft' ],
         [ 'button15', 'ArrowRight' ],
         [ 'button3', 'KeyX' ],
-      ].map(([btn, key]) =>
-        [btn, () => dispatchEvent(new KeyboardEvent("keydown", { key }))] as const)
-    
+    ]).map(([btn, key]) =>
+        [btn, () => dispatchEvent(new KeyboardEvent("keydown", { key }))]);
+});
+
+gameControl.on('connect', async (gp: any) => {
+    await wait(0);
     const keyMap = new Map([...gameCtrlBtns, ...keys]);
 
     for (const [gpBtn, fct] of keyMap) {
