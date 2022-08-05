@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react';
 import { interval, msTimeObj, wait } from '@giveback007/util-lib';
 import { Button, Modal } from 'my-alyce-component-lib';
-import React, { useEffect, useState } from 'react';
 import { deleteMem, updateMem } from '../util/state.util';
 import { calcMem, genSimplifiedTime, isTxtInput, Memory } from '../util/utils';
 import { EditMem } from './edit-mem-modal';

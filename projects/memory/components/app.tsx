@@ -6,11 +6,12 @@ import { deleteMem, learnNewWord } from "../util/state.util";
 import { genSimplifiedTime, isTxtInput } from "../util/utils";
 import { AddWord } from "./add-word-modal";
 import { ExportWordsModal } from "./export-words-modal";
+import { GamepadMapModal } from "./gamepad-map";
 import { ImportWordsModal } from "./import-words-modal";
 import { QnaModal } from "./qna-modal";
 
 type S = {
-    modal: 'add-word' | 'q-n-a' | 'import-words' | 'export-words' | null;
+    modal: 'add-word' | 'q-n-a' | 'import-words' | 'export-words' | 'gamepad' | null;
     selectedId: string | null;
     isSigningIn: boolean;
 };
@@ -84,7 +85,8 @@ export const App = link(s => s, class extends Component<P, S> {
             memorize, readyQnA, memoryDict, tNow,
             nextIncomingId, notIntroduced,
             
-            alert, user, isLoading, syncStatus
+            alert, user, isLoading, syncStatus,
+            gamepadIsOn
         } = this.props;
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
@@ -154,6 +156,15 @@ export const App = link(s => s, class extends Component<P, S> {
                     size='lg'
                     onClick={() => this.setState({ modal: 'export-words' })}
                 >Export Mem</Button>
+                {gamepadIsOn && <Button
+                    shape="flat"
+                    type="primary"
+                    size='lg'
+                    onClick={() => {
+                        this.setState({ modal: 'gamepad' });
+                        store.setState({ gamepadBindingMode: true })
+                    }}
+                >🎮</Button>}
             </div>
 
             <div style={{display: 'flex', border: 'solid 1px lightgray'}}>
@@ -340,6 +351,10 @@ export const App = link(s => s, class extends Component<P, S> {
             {modal === 'add-word' && <AddWord exit={() => this.setState({ modal: null })} />}
             {modal === 'import-words' && <ImportWordsModal exit={() => this.setState({ modal: null })} />}
             {modal === 'export-words' && <ExportWordsModal exit={() => this.setState({ modal: null })}/>}
+            {modal === 'gamepad' && <GamepadMapModal exit={() => {
+                this.setState({ modal: null });
+                store.setState({ gamepadBindingMode: false })
+            }}/>}
         </div></>
     }
 });

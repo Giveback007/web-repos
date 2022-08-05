@@ -2,7 +2,7 @@ import './init';
 import 'my-alyce-component-lib/dist/index.css';
 import React from 'react';
 import ReactDOM from "react-dom";
-import { debounceTimeOut, sec, wait } from '@giveback007/util-lib';
+import { debounceTimeOut, sec } from '@giveback007/util-lib';
 import { store, timeFromMem } from './store';
 import { App } from './components/app';
 import 'gamecontroller.js';
@@ -32,7 +32,7 @@ declare global {
     /** React App Render */
     ReactDOM.render(<App />, document.getElementById("root"));
 
-    (global as any).getWords = (hrs: number = Infinity) => {
+    (global as any).getWords = (hrs = 168) => {
         const timing = hrs * 60 * 60000;
         
         return store.getState().memorize.filter(x => {
@@ -48,39 +48,26 @@ declare global {
     }
 })();
 
-let keys: [string, () => boolean][];
-
-window.addEventListener("gamepadconnected", (e) => {
-    const tinyGamepad = e.gamepad.id === "Bluetooth Wireless Controller    (Vendor: 2dc8 Product: 3230)";
-    keys = (tinyGamepad ? [
-        ['down0', 'ArrowDown'],
-        ['button1', 'ArrowDown'],
-        ['left0', 'ArrowLeft'],
-        ['right0', 'ArrowRight'],
-        ['button3', 'KeyX'],
-    ] : [
-        [ 'button0', 'ArrowDown' ],
-        [ 'button13', 'ArrowDown' ],
-        [ 'button14', 'ArrowLeft' ],
-        [ 'button15', 'ArrowRight' ],
-        [ 'button3', 'KeyX' ],
-    ]).map(([btn, key]) =>
-        [btn, () => dispatchEvent(new KeyboardEvent("keydown", { key }))]);
-});
-
 gameControl.on('connect', async (gp: any) => {
-    await wait(0);
-    const keyMap = new Map([...gameCtrlBtns, ...keys]);
+    const id = navigator.getGamepads()[gp.id]?.id;
+    if (!id) throw 'Something Went Wrong!';
 
-    for (const [gpBtn, fct] of keyMap) {
+    const { gamepadBindings } = store.getState();
+    const obj = gamepadBindings[id];
+    if (!obj) store.setState({ gamepadBindings: { ...gamepadBindings, [id]: {} } });
+
+    store.setState({ gamepadIsOn: true });
+
+    for (const btn of gameCtrlBtns) {
         let didPress = false;
         const debounce = debounceTimeOut();
-        gp.on(gpBtn, () => {
+
+        gp.on(btn, () => {
             debounce(() => didPress = false, 50);
 
             if (!didPress) {
                 didPress = true;
-                fct();
+                store.action({ type: 'gamepad', data: {id, btn} })
             }
         }, 50);
     }
@@ -99,4 +86,4 @@ const gameCtrlBtns = [
     "l1", "l2", "r1", "r2",
 
     "start", "select", "power",
-].map(btn => [btn, () => log(btn)] as const);
+]//.map(btn => [btn, () => log(btn)] as const);

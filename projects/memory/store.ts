@@ -1,5 +1,5 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { debounceTimeOut, equal, getDayStartEnd, hrs, wait, wks } from "@giveback007/util-lib";
+import { debounceTimeOut, equal, getDayStartEnd, hrs, objKeys, wait, wks } from "@giveback007/util-lib";
 import { arrToDict, Dict, min } from "@giveback007/util-lib";
 import type { AlertProps } from "my-alyce-component-lib";
 import { Action } from "./actions";
@@ -7,6 +7,8 @@ import { Auth } from "./auth";
 import { GoogleApis } from "./google-api";
 import { genSyncObj, initOnlineState, syncOnlineState } from "./util/sync.util";
 import type { Memory } from "./util/utils";
+
+export type GpActions = typeof set.gamepadActions[any];
 
 type User = {
     email: string;
@@ -39,6 +41,8 @@ export const set = {
     easeSub: 0.8,
 
     syncFileName: 'SyncData_V1.json',
+
+    gamepadActions: ['down','left','right','exit','confirm']
 } as const;
 
 // -- STORE -- //
@@ -73,17 +77,10 @@ export type State = ReturnType<typeof timeFromMem> & {
 
     /** Array of ids for ready to review, sorted by highest score */
     readyQnA: string[];
-
-    /** The id of item to be added to readyQnA */
-    // nextIncomingId: string | null;
-
-    // -- TIME STATE -- //
-    // nReadyIn5min: number,
-    // nReadyToday: number,
-    // nReadyTomorrow: number,
-    // nReadyThisWeek: number,
-
-    // tNow: number;
+    
+    gamepadIsOn: boolean;
+    gamepadBindings: Dict<{ [k in string]?: GpActions | null } | undefined>;
+    gamepadBindingMode: boolean;
 }
 
 export const store = new StateManager<State>({
@@ -109,9 +106,13 @@ export const store = new StateManager<State>({
     nReadyThisWeek: 0,
     nReadyNextWeek: 0,
     tNow: Date.now(),
+
+    gamepadIsOn: false,
+    gamepadBindings: {},
+    gamepadBindingMode: false,
 }, {
     id: 'memory-helper-v2', // this has to be user-based
-    useKeys: ['memorize', 'notIntroduced', 'deleted'],
+    useKeys: ['memorize', 'notIntroduced', 'deleted', "gamepadBindings"],
 });
 
 export const link = stateManagerReactLinker(store);
@@ -304,3 +305,37 @@ store.actionSub([
             throw new Error('Not Implemented');
     }
 });
+
+
+const keyMap: Map<GpActions, () => any> = new Map(([
+    [ 'confirm', 'ArrowDown' ],
+    [ 'exit', 'KeyX' ],
+
+    [ 'down', 'ArrowDown' ],
+    [ 'left', 'ArrowLeft' ],
+    [ 'right', 'ArrowRight' ],
+] as const).map(([btn, key]) => [btn, () => dispatchEvent(new KeyboardEvent("keydown", { key }))] as const));
+
+
+store.actionSub('gamepad', ({ data: { id, btn } }: { type: string, data: { id: string; btn: string } }) => {
+    const { gamepadBindings, gamepadBindingMode } = store.getState();
+    if (gamepadBindingMode) return;
+
+    const action = gamepadBindings[id]?.[btn];
+    if (!action) return log(btn);
+
+    keyMap.get(action)?.();
+});
+
+export function bindGpButton(id: string, btn: string, action: GpActions) {
+    const { gamepadBindings } = store.getState();
+    const obj = gamepadBindings[id] || {};
+    Object.entries(obj).forEach(([_btn, _action]) =>
+        _action === action && (obj[_btn] = null)
+    );
+
+    store.setState({ gamepadBindings: {
+        ...gamepadBindings,
+        [id]: {...obj, [btn]: action}
+    } });
+}
