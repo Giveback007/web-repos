@@ -1,5 +1,5 @@
 import { stateManagerReactLinker, StateManager } from "@giveback007/browser-utils";
-import { debounceTimeOut, equal, getDayStartEnd, hrs, objKeys, wait, wks } from "@giveback007/util-lib";
+import { days, debounceTimeOut, equal, getDayStartEnd, hrs, objKeys, wait, wks } from "@giveback007/util-lib";
 import { arrToDict, Dict, min } from "@giveback007/util-lib";
 import type { AlertProps } from "my-alyce-component-lib";
 import { Action } from "./actions";
@@ -77,6 +77,12 @@ export type State = ReturnType<typeof timeFromMem> & {
 
     /** Array of ids for ready to review, sorted by highest score */
     readyQnA: string[];
+    forReview: string[];
+    forLearn: string[];
+    difficult: string[];
+    practiceReady: string[];
+
+    practice: string[];
     
     gamepadIsOn: boolean;
     gamepadBindings: Dict<{ [k in string]?: GpActions | null } | undefined>;
@@ -96,8 +102,14 @@ export const store = new StateManager<State>({
     deleted: [],
 
     memoryDict: {},
-    readyQnA: [],
     nextIncomingId: null,
+    readyQnA: [],
+    forReview: [],
+    forLearn: [],
+    difficult: [],
+    practiceReady: [],
+
+    practice: [],
     
     nReadyIn5min: 0,
     nReadyIn30min: 0,
@@ -305,6 +317,49 @@ store.actionSub([
             throw new Error('Not Implemented');
     }
 });
+
+store.stateSub(['memoryDict', 'readyQnA', 'memorize'], (s) => {
+
+    const { readyQnA, memoryDict: dict, practice } = s;
+    const now = Date.now();
+    
+    const obj = {
+        forReview:      [] as string[],
+        forLearn:       [] as string[],
+        difficult:      [] as string[],
+        practiceReady:  [] as string[],
+        practice,
+    };
+
+    const nonReview: string[] = [];
+
+    readyQnA.sort((a, b) => dict[b].score - dict[a].score).forEach(id => {
+        const mem = dict[id];
+
+        if (mem.timing > days(2))
+            obj.forReview.push(id);
+        else
+            nonReview.push(id);
+    });
+
+    practice.forEach(id =>
+        dict[id].reviewOn <= now && obj.practiceReady.push(id));
+
+    if (nonReview.length && !obj.forReview.length && !obj.practiceReady.length) {
+        const id = nonReview.shift() as string;
+
+        practice.push(id);
+        obj.practiceReady.push(id);
+    }
+    
+    const practiceSet = new Set(practice);
+    nonReview.forEach(id => {
+        if (practiceSet.has(id)) return;
+        obj[dict[id].score < set.baseScore ? 'difficult' : 'forLearn'].push(id)
+    });
+
+    store.setState(obj);
+})
 
 
 const keyMap: Map<GpActions, () => any> = new Map(([

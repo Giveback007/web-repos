@@ -11,13 +11,16 @@ export function addQnA({ q, a, immediate }: { q: string; a: string; immediate: b
 }
 
 export function updateMem(id: string, success: boolean) {
-    const dict = {...store.getState().memoryDict};
+    const { memoryDict, practice } = store.getState()
+    const dict = {...memoryDict};
     const mem: Memory = calcMem({...dict[id]}, success);
     mem.updatedOn = Date.now();
 
     dict[id] = mem;
     const memorize = objVals(dict);
-    store.setState({ memorize });
+    const prct = new Set(practice);
+    prct.add(id);
+    store.setState({ memorize, practice: [...prct.values()] });
 }
 
 export function deleteMem(id: string | 'DELETE-ALL') {

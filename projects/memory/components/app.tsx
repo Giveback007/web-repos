@@ -1,7 +1,7 @@
-import { min, objKeys, msTimeObj, days, wait } from "@giveback007/util-lib";
+import { min, objKeys, msTimeObj, wait } from "@giveback007/util-lib";
 import { Alert, Avatar, Button } from "my-alyce-component-lib";
 import React, { Component } from "react";
-import { auth, link, set, State, store } from "../store";
+import { auth, link, State, store } from "../store";
 import { deleteMem, learnNewWord } from "../util/state.util";
 import { genSimplifiedTime, isTxtInput } from "../util/utils";
 import { AddWord } from "./add-word-modal";
@@ -35,8 +35,9 @@ export const App = link(s => s, class extends Component<P, S> {
         ) return;
 
         if (key === 'Enter' || key === 'ArrowDown') {
-            const id = this.props.readyQnA[0];
-            this.setState({ selectedId: id, modal: 'q-n-a' })
+            // const id = this.props.readyQnA[0];
+            // this.setState({ selectedId: id, modal: 'q-n-a' })
+            this.setQnA('NEXT')
         }
     }
 
@@ -54,13 +55,13 @@ export const App = link(s => s, class extends Component<P, S> {
     }
 
     setQnA = async (id: string | 'NEXT' | null): Promise<any> => {
-        const { readyQnA, memoryDict } = this.props;
+        const { memoryDict, forReview, practiceReady } = this.props;
         
         this.setState({ modal: null, selectedId: null });
         await wait(0);
         
         if (id === 'NEXT') {
-            const next = readyQnA[0];
+            const next = forReview[0] || practiceReady[0];
             if (!next) return learnNewWord();
             
             this.setState({ modal: 'q-n-a', selectedId: next });
@@ -86,27 +87,12 @@ export const App = link(s => s, class extends Component<P, S> {
             nextIncomingId, notIntroduced,
             
             alert, user, isLoading, syncStatus,
-            gamepadIsOn
+            gamepadIsOn,
+
+            forReview, forLearn, difficult, practiceReady           
         } = this.props;
 
         if (memorize.length && !objKeys(memoryDict).length) return <h1>Loading...</h1>;
-
-        const { forReview, forLearn, difficult } = (() => {
-            const dict = memoryDict;
-            const obj = {
-                forReview:  [] as string[],
-                forLearn:   [] as string[],
-                difficult:   [] as string[],
-            }
-
-            readyQnA.sort((a, b) => dict[b].score - dict[a].score).forEach(id => {
-                const mem = dict[id];
-                if (mem.timing > days(2)) return obj.forReview.push(id);
-                obj[mem.score < set.baseScore ? 'difficult' : 'forLearn'].push(id)
-            });
-
-            return obj;
-        })();
 
         const nextWordTimer = (() => {
             if (!nextIncomingId) return null;
@@ -216,59 +202,32 @@ export const App = link(s => s, class extends Component<P, S> {
                 onClick={async () => this.setState({ selectedId: await learnNewWord() })}
             >{notIntroduced.length ? 'Learn New Mem' : 'None In Storage'}</Button>
 
-            <div>
+            <div style={{ paddingBottom: "4rem" }}>
                 {!!readyQnA.length && <>
 
-                    {(forReview.length) ? 
-                        <>
-                            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
-                            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Review:</h1>
-                        </> : null
-                    }
-                    
-                    {forReview.map(id => {
-                        const { question } = memoryDict[id];
-                        return <Button
-                            style={{ margin: '0.2rem' }}
-                            shape="flat"
-                            size='xl'
-                            onClick={() => this.setQnA(id)}
-                        >{question}</Button>
-                    })}
+                    <QnABtns
+                        memIds={forReview}
+                        title="Review"
+                        setQnA={this.setQnA}
+                    />
 
-                    {forLearn.length ? 
-                        <>
-                            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
-                            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Learn:</h1>
-                        </> : null
-                    }
+                    <QnABtns
+                        memIds={practiceReady}
+                        title="Practice"
+                        setQnA={this.setQnA}
+                    />
 
-                    {forLearn.map(id => {
-                        const { question } = memoryDict[id];
-                        return <Button
-                            style={{ margin: '0.2rem' }}
-                            shape="flat"
-                            size='xl'
-                            onClick={() => this.setQnA(id)}
-                        >{question}</Button>
-                    })}
+                    <QnABtns
+                        memIds={forLearn}
+                        title="Learn"
+                        setQnA={this.setQnA}
+                    />
 
-                    {forLearn.length ? 
-                        <>
-                            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
-                            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>Difficult:</h1>
-                        </> : null
-                    }
-
-                    {difficult.map(id => {
-                        const { question } = memoryDict[id];
-                        return <Button
-                            style={{ margin: '0.2rem' }}
-                            shape="flat"
-                            size='xl'
-                            onClick={() => this.setQnA(id)}
-                        >{question}</Button>
-                    })}
+                    <QnABtns
+                        memIds={difficult}
+                        title="Difficult"
+                        setQnA={this.setQnA}
+                    />
                 </>}
             </div>
 
@@ -300,6 +259,7 @@ export const App = link(s => s, class extends Component<P, S> {
                 </div>
                 
                 :
+
                 <Button
                     size="md"
                     type="success"
@@ -358,6 +318,30 @@ export const App = link(s => s, class extends Component<P, S> {
         </div></>
     }
 });
+
+export const QnABtns = link(({ memoryDict }) => ({ memoryDict }), ({ memoryDict, memIds, setQnA, title }: {
+    memIds: string[],
+    memoryDict: State['memoryDict'],
+    setQnA: (id: string | null) => any,
+    title: string
+}) => <>
+    {memIds.length ? 
+        <>
+            <div style={{borderTop: 'solid 3px lightgray', paddingTop: '0.3rem'}}></div>
+            <h1 style={{fontSize: '1.75rem', textAlign: 'center', marginBottom: '1rem'}}>{title}:</h1>
+        </> : null
+    }
+
+    {memIds.map(id => {
+        const { question } = memoryDict[id];
+        return <Button
+            style={{ margin: '0.2rem' }}
+            shape="flat"
+            size='xl'
+            onClick={() => setQnA(id)}
+        >{question}</Button>
+    })}
+</>);
 
 const googleLogo = <svg width="19" height="20" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M18.9892 10.1871C18.9892 9.36767 18.9246 8.76973 18.7847 8.14966H9.68848V11.848H15.0277C14.9201 12.767 14.3388 14.1512 13.047 15.0812L13.0289 15.205L15.905 17.4969L16.1042 17.5173C17.9342 15.7789 18.9892 13.221 18.9892 10.1871Z" fill="#4285F4" />
